@@ -1,49 +1,51 @@
 {% extends "base.html" %}
 
-{% block title %}Music - Ahoy Indie Media{% endblock %}
+{% block title %}Media - Ahoy Indie Media{% endblock %}
 
 {% block content %}
-<div class="music-container">
-    <h1>Music Player</h1>
-
-    {% if error %}
-    <div class="error-message">
-        {{ error }}
-    </div>
-    {% endif %}
+<div class="media-container">
+    <h1>Video Content</h1>
 
     <div class="search-container">
-        <input type="text" id="search-input" placeholder="Search songs...">
+        <input type="text" id="search-input" placeholder="Search videos...">
         <div class="filter-buttons">
             <button class="filter-btn active" data-filter="all">All</button>
-            <button class="filter-btn"
-                data-filter="favorites">Favorites</button>
+            <button class="filter-btn" data-filter="featured">Featured</button>
             <button class="filter-btn" data-filter="recent">Recent</button>
         </div>
     </div>
 
-    <div class="songs-grid">
-        {% for song in songs %}
-        <div class="song-card" data-song-id="{{ song.id }}">
-            <div class="song-image">
-                <img src="{{ song.album_art }}" alt="{{ song.title }}">
-                <button class="play-btn" data-song-url="{{ song.url }}">
+    <div class="videos-grid">
+        {% for video in videos %}
+        <div class="video-card">
+            <div class="video-thumbnail">
+                <img src="{{ video.thumbnail }}" alt="{{ video.title }}">
+                <button class="play-btn" data-video-url="{{ video.url }}">
                     <i class="fas fa-play"></i>
                 </button>
             </div>
-            <div class="song-info">
-                <h3>{{ song.title }}</h3>
-                <p>{{ song.artist }}</p>
+            <div class="video-info">
+                <h3>{{ video.title }}</h3>
+                <p>{{ video.description }}</p>
+                <div class="video-meta">
+                    <span><i class="fas fa-calendar"></i> {{ video.date
+                        }}</span>
+                    <span><i class="fas fa-clock"></i> {{ video.duration
+                        }}</span>
+                </div>
             </div>
-            <div class="song-actions">
-                <button class="bookmark-btn" data-song-id="{{ song.id }}">
+            <div class="video-actions">
+                <button class="bookmark-btn" data-video-id="{{ video.id }}">
                     <i class="fas fa-bookmark"></i>
+                </button>
+                <button class="share-btn" data-video-id="{{ video.id }}">
+                    <i class="fas fa-share-alt"></i>
                 </button>
             </div>
         </div>
         {% else %}
-        <div class="no-songs">
-            <p>No songs available at the moment.</p>
+        <div class="no-videos">
+            <p>No videos available at the moment.</p>
         </div>
         {% endfor %}
     </div>
@@ -55,14 +57,14 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Search functionality
     const searchInput = document.getElementById('search-input');
-    const songCards = document.querySelectorAll('.song-card');
+    const videoCards = document.querySelectorAll('.video-card');
     
     searchInput.addEventListener('input', function() {
         const searchTerm = this.value.toLowerCase();
-        songCards.forEach(card => {
+        videoCards.forEach(card => {
             const title = card.querySelector('h3').textContent.toLowerCase();
-            const artist = card.querySelector('p').textContent.toLowerCase();
-            if (title.includes(searchTerm) || artist.includes(searchTerm)) {
+            const description = card.querySelector('p').textContent.toLowerCase();
+            if (title.includes(searchTerm) || description.includes(searchTerm)) {
                 card.style.display = 'block';
             } else {
                 card.style.display = 'none';
@@ -84,13 +86,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const bookmarkButtons = document.querySelectorAll('.bookmark-btn');
     bookmarkButtons.forEach(button => {
         button.addEventListener('click', function() {
-            const songId = this.dataset.songId;
+            const videoId = this.dataset.videoId;
             fetch('/bookmark', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                 },
-                body: `item_id=${songId}&item_type=music`
+                body: `item_id=${videoId}&item_type=video`
             })
             .then(response => response.json())
             .then(data => {
@@ -99,6 +101,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             })
             .catch(error => console.error('Error:', error));
+        });
+    });
+
+    // Share functionality
+    const shareButtons = document.querySelectorAll('.share-btn');
+    shareButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const videoId = this.dataset.videoId;
+            // Implement share functionality here
+            alert('Share functionality coming soon!');
         });
     });
 });

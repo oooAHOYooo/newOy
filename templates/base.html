@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <meta charset="utf-8" />
-        <title>Ahoy Indie Media</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{% block title %}Ahoy Indie Media{% endblock %}</title>
         <link rel="stylesheet"
-            href="{{ url_for('static', filename='css/main.css') }}" />
+            href="{{ url_for('static', filename='css/5-6.css') }}">
+        <link rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+        {% block extra_css %}{% endblock %}
     </head>
 
     <body>
@@ -16,22 +19,72 @@
                     alt="Ahoy Indie Media Logo"
                     onclick="window.location.href='{{ url_for('news') }}'">
             </div>
-            <div class="nav-section">
-                <a class="nav-button" href="{{ url_for('news') }}">🏠 News</a>
-                <a class="nav-button" href="{{ url_for('media') }}">📺 Media</a>
-                <a class="nav-button" href="{{ url_for('music') }}">🎵 Music</a>
-                <a class="nav-button" href="{{ url_for('podcast') }}">🎙️
-                    Podcast</a>
-                <a class="nav-button" href="{{ url_for('about') }}">ℹ️ About</a>
-                <a class="nav-button" href="{{ url_for('my_bookmarks') }}">🔖
-                    Bookmarks</a>
+            <div class="sidebar-menu">
+                <a href="{{ url_for('news') }}" class="nav-button">
+                    <i class="fas fa-newspaper"></i>
+                    <span>News</span>
+                </a>
+                <a href="{{ url_for('media') }}" class="nav-button">
+                    <i class="fas fa-video"></i>
+                    <span>Media</span>
+                </a>
+                <a href="{{ url_for('music') }}" class="nav-button">
+                    <i class="fas fa-music"></i>
+                    <span>Music</span>
+                </a>
+                <a href="{{ url_for('podcast') }}" class="nav-button">
+                    <i class="fas fa-podcast"></i>
+                    <span>Podcast</span>
+                </a>
+                <a href="{{ url_for('my_bookmarks') }}" class="nav-button">
+                    <i class="fas fa-bookmark"></i>
+                    <span>My Bookmarks</span>
+                </a>
+                <a href="{{ url_for('about') }}" class="nav-button">
+                    <i class="fas fa-info-circle"></i>
+                    <span>About</span>
+                </a>
             </div>
         </div>
 
+        <button class="toggle-sidebar-btn">
+            <i class="fas fa-bars"></i>
+        </button>
+
         <div class="main-content">
-            {% block content %}{% endblock content %}
+            {% block content %}{% endblock %}
+        </div>
+
+        <div class="music-player">
+            <div id="now-playing-widget">
+                <div class="album-art">
+                    <img src alt="Album Art" id="current-album-art">
+                </div>
+                <div class="song-info">
+                    <h3 id="current-song-title">No song playing</h3>
+                    <p id="current-artist">Select a song to play</p>
+                </div>
+                <div class="controls">
+                    <button id="prev-btn"><i
+                            class="fas fa-step-backward"></i></button>
+                    <button id="play-pause-btn"><i
+                            class="fas fa-play"></i></button>
+                    <button id="next-btn"><i
+                            class="fas fa-step-forward"></i></button>
+                </div>
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress"></div>
+                    </div>
+                    <div class="time-info">
+                        <span id="current-time">0:00</span>
+                        <span id="total-time">0:00</span>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+        {% block extra_js %}{% endblock %}
     </body>
 </html>

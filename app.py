@@ -2,13 +2,17 @@ import os
 import json
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 from flask_sqlalchemy import SQLAlchemy
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = "super-secret-key"  # Needed for sessions, etc.
+app.secret_key = os.getenv('SECRET_KEY', 'your-secret-key-here')  # Change this in production
 
 # If you do NOT want to use a DB at all, you can skip everything related to db/SQLAlchemy
 
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///bookmarks.db"
+app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv('DATABASE_URL', 'sqlite:///bookmarks.db')
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
@@ -67,14 +71,16 @@ def home():
 
 @app.route("/news")
 def news():
-    # Example usage: display newsletter data
-    # Sort by date descending if you wish
-    sorted_news = sorted(
-        newsletter_data,
-        key=lambda x: x.get("date", ""),
-        reverse=True
-    )
-    return render_template("index.html", news_items=sorted_news)
+    try:
+        sorted_news = sorted(
+            newsletter_data,
+            key=lambda x: x.get("date", ""),
+            reverse=True
+        )
+        return render_template("index.html", news_items=sorted_news)
+    except Exception as e:
+        app.logger.error(f"Error in news route: {str(e)}")
+        return render_template("index.html", news_items=[], error="Failed to load news")
 
 @app.route("/media")
 def media():
@@ -82,9 +88,12 @@ def media():
 
 @app.route("/music")
 def music():
-    # Pass the songs to the template
-    all_songs = music_data.get("songs", [])
-    return render_template("music.html", songs=all_songs)
+    try:
+        all_songs = music_data.get("songs", [])
+        return render_template("music.html", songs=all_songs)
+    except Exception as e:
+        app.logger.error(f"Error in music route: {str(e)}")
+        return render_template("music.html", songs=[], error="Failed to load music")
 
 @app.route("/podcast")
 def podcast():
@@ -104,24 +113,32 @@ def bookmark():
     A minimal endpoint to bookmark an item (e.g. a song).
     We expect a form or JSON with item_id, item_type.
     """
-    user_id = get_current_user_id()
-    item_id = request.form.get("item_id")
-    item_type = request.form.get("item_type", "music")
+    try:
+        user_id = get_current_user_id()
+        item_id = request.form.get("item_id")
+        item_type = request.form.get("item_type", "music")
 
-    if not item_id:
-        return jsonify({"error": "No item_id provided"}), 400
+        if not item_id:
+            return jsonify({"error": "No item_id provided"}), 400
 
-    new_bm = Bookmark(user_id=user_id, item_id=item_id, item_type=item_type)
-    db.session.add(new_bm)
-    db.session.commit()
-    return jsonify({"success": True, "item_id": item_id, "item_type": item_type})
+        new_bm = Bookmark(user_id=user_id, item_id=item_id, item_type=item_type)
+        db.session.add(new_bm)
+        db.session.commit()
+        return jsonify({"success": True, "item_id": item_id, "item_type": item_type})
+    except Exception as e:
+        app.logger.error(f"Error in bookmark route: {str(e)}")
+        return jsonify({"error": "Internal server error"}), 500
 
 
 @app.route("/my-bookmarks")
 def my_bookmarks():
-    user_id = get_current_user_id()
-    results = Bookmark.query.filter_by(user_id=user_id).all()
-    return render_template("bookmarks.html", bookmarks=results)
+    try:
+        user_id = get_current_user_id()
+        results = Bookmark.query.filter_by(user_id=user_id).all()
+        return render_template("bookmarks.html", bookmarks=results)
+    except Exception as e:
+        app.logger.error(f"Error in my_bookmarks route: {str(e)}")
+        return render_template("bookmarks.html", bookmarks=[], error="Failed to load bookmarks")
 
 
 #############
@@ -136,6 +153,16 @@ def sitemap():
         routes.append({"endpoint": rule.endpoint, "methods": list(rule.methods), "url": str(rule)})
     return jsonify({"routes": routes})
 
+# Error handlers
+@app.errorhandler(404)
+def not_found_error(error):
+    return render_template('404.html'), 404
+
+@app.errorhandler(500)
+def internal_error(error):
+    db.session.rollback()
+    return render_template('500.html'), 500
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.getenv('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=os.getenv('FLASK_DEBUG', 'False').lower() == 'true')

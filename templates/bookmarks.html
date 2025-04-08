@@ -1,14 +1,101 @@
 {% extends "base.html" %}
+
+{% block title %}My Bookmarks - Ahoy Indie Media{% endblock %}
+
 {% block content %}
-<h2>Your Bookmarks</h2>
-<hr />
-{% if bookmarks %}
-<ul>
-    {% for bm in bookmarks %}
-    <li>Item ID {{ bm.item_id }}, Type: {{ bm.item_type }}</li>
-    {% endfor %}
-</ul>
-{% else %}
-<p>No bookmarks yet.</p>
-{% endif %}
-{% endblock content %}
+<div class="bookmarks-container">
+    <h1>My Bookmarks</h1>
+
+    {% if error %}
+    <div class="error-message">
+        {{ error }}
+    </div>
+    {% endif %}
+
+    <div class="bookmarks-grid">
+        {% for bookmark in bookmarks %}
+        <div class="bookmark-card" data-item-id="{{ bookmark.item_id }}"
+            data-item-type="{{ bookmark.item_type }}">
+            <div class="bookmark-header">
+                <h3>
+                    {% if bookmark.item_type == 'music' %}
+                    <i class="fas fa-music"></i>
+                    {% elif bookmark.item_type == 'news' %}
+                    <i class="fas fa-newspaper"></i>
+                    {% elif bookmark.item_type == 'podcast' %}
+                    <i class="fas fa-podcast"></i>
+                    {% else %}
+                    <i class="fas fa-bookmark"></i>
+                    {% endif %}
+                    {{ bookmark.item_type|title }}
+                </h3>
+                <button class="remove-bookmark-btn"
+                    data-bookmark-id="{{ bookmark.id }}">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="bookmark-content">
+                <p>Item ID: {{ bookmark.item_id }}</p>
+            </div>
+            <div class="bookmark-actions">
+                <a href="#" class="action-button view-item-btn">View Item</a>
+            </div>
+        </div>
+        {% else %}
+        <div class="no-bookmarks">
+            <p>You haven't bookmarked any items yet.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Remove bookmark functionality
+    const removeButtons = document.querySelectorAll('.remove-bookmark-btn');
+    removeButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const bookmarkId = this.dataset.bookmarkId;
+            if (confirm('Are you sure you want to remove this bookmark?')) {
+                fetch(`/bookmark/${bookmarkId}`, {
+                    method: 'DELETE',
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        this.closest('.bookmark-card').remove();
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            }
+        });
+    });
+
+    // View item functionality
+    const viewButtons = document.querySelectorAll('.view-item-btn');
+    viewButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const card = this.closest('.bookmark-card');
+            const itemType = card.dataset.itemType;
+            const itemId = card.dataset.itemId;
+            
+            // Redirect to the appropriate page based on item type
+            switch(itemType) {
+                case 'music':
+                    window.location.href = `/music#${itemId}`;
+                    break;
+                case 'news':
+                    window.location.href = `/news#${itemId}`;
+                    break;
+                case 'podcast':
+                    window.location.href = `/podcast#${itemId}`;
+                    break;
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

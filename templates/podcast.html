@@ -1,49 +1,47 @@
 {% extends "base.html" %}
 
-{% block title %}Music - Ahoy Indie Media{% endblock %}
+{% block title %}Podcasts - Ahoy Indie Media{% endblock %}
 
 {% block content %}
-<div class="music-container">
-    <h1>Music Player</h1>
-
-    {% if error %}
-    <div class="error-message">
-        {{ error }}
-    </div>
-    {% endif %}
+<div class="podcast-container">
+    <h1>Podcasts</h1>
 
     <div class="search-container">
-        <input type="text" id="search-input" placeholder="Search songs...">
+        <input type="text" id="search-input" placeholder="Search podcasts...">
         <div class="filter-buttons">
             <button class="filter-btn active" data-filter="all">All</button>
-            <button class="filter-btn"
-                data-filter="favorites">Favorites</button>
+            <button class="filter-btn" data-filter="featured">Featured</button>
             <button class="filter-btn" data-filter="recent">Recent</button>
         </div>
     </div>
 
-    <div class="songs-grid">
-        {% for song in songs %}
-        <div class="song-card" data-song-id="{{ song.id }}">
-            <div class="song-image">
-                <img src="{{ song.album_art }}" alt="{{ song.title }}">
-                <button class="play-btn" data-song-url="{{ song.url }}">
+    <div class="podcasts-grid">
+        {% for podcast in podcasts %}
+        <div class="podcast-card">
+            <div class="podcast-image">
+                <img src="{{ podcast.cover_art }}" alt="{{ podcast.title }}">
+            </div>
+            <div class="podcast-info">
+                <h3>{{ podcast.title }}</h3>
+                <p>{{ podcast.description }}</p>
+                <div class="podcast-meta">
+                    <span><i class="fas fa-user"></i> {{ podcast.host }}</span>
+                    <span><i class="fas fa-calendar"></i> {{ podcast.date
+                        }}</span>
+                </div>
+            </div>
+            <div class="podcast-actions">
+                <button class="play-btn" data-podcast-url="{{ podcast.url }}">
                     <i class="fas fa-play"></i>
                 </button>
-            </div>
-            <div class="song-info">
-                <h3>{{ song.title }}</h3>
-                <p>{{ song.artist }}</p>
-            </div>
-            <div class="song-actions">
-                <button class="bookmark-btn" data-song-id="{{ song.id }}">
+                <button class="bookmark-btn" data-podcast-id="{{ podcast.id }}">
                     <i class="fas fa-bookmark"></i>
                 </button>
             </div>
         </div>
         {% else %}
-        <div class="no-songs">
-            <p>No songs available at the moment.</p>
+        <div class="no-podcasts">
+            <p>No podcasts available at the moment.</p>
         </div>
         {% endfor %}
     </div>
@@ -55,14 +53,14 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Search functionality
     const searchInput = document.getElementById('search-input');
-    const songCards = document.querySelectorAll('.song-card');
+    const podcastCards = document.querySelectorAll('.podcast-card');
     
     searchInput.addEventListener('input', function() {
         const searchTerm = this.value.toLowerCase();
-        songCards.forEach(card => {
+        podcastCards.forEach(card => {
             const title = card.querySelector('h3').textContent.toLowerCase();
-            const artist = card.querySelector('p').textContent.toLowerCase();
-            if (title.includes(searchTerm) || artist.includes(searchTerm)) {
+            const description = card.querySelector('p').textContent.toLowerCase();
+            if (title.includes(searchTerm) || description.includes(searchTerm)) {
                 card.style.display = 'block';
             } else {
                 card.style.display = 'none';
@@ -84,13 +82,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const bookmarkButtons = document.querySelectorAll('.bookmark-btn');
     bookmarkButtons.forEach(button => {
         button.addEventListener('click', function() {
-            const songId = this.dataset.songId;
+            const podcastId = this.dataset.podcastId;
             fetch('/bookmark', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                 },
-                body: `item_id=${songId}&item_type=music`
+                body: `item_id=${podcastId}&item_type=podcast`
             })
             .then(response => response.json())
             .then(data => {
