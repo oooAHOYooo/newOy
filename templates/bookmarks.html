@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Your Bookmarks</h2>
+<hr />
+{% if bookmarks %}
+<ul>
+    {% for bm in bookmarks %}
+    <li>Item ID {{ bm.item_id }}, Type: {{ bm.item_type }}</li>
+    {% endfor %}
+</ul>
+{% else %}
+<p>No bookmarks yet.</p>
+{% endif %}
+{% endblock content %}

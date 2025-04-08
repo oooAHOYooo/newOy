@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>Ahoy Indie Media</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="stylesheet"
+            href="{{ url_for('static', filename='css/main.css') }}" />
+    </head>
+
+    <body>
+        <!-- A simple sidebar -->
+        <div class="left-dashboard">
+            <div class="logo-container">
+                <img src="{{ url_for('static', filename='img/u_ahoy23.png') }}"
+                    alt="Ahoy Indie Media Logo"
+                    onclick="window.location.href='{{ url_for('news') }}'">
+            </div>
+            <div class="nav-section">
+                <a class="nav-button" href="{{ url_for('news') }}">🏠 News</a>
+                <a class="nav-button" href="{{ url_for('media') }}">📺 Media</a>
+                <a class="nav-button" href="{{ url_for('music') }}">🎵 Music</a>
+                <a class="nav-button" href="{{ url_for('podcast') }}">🎙️
+                    Podcast</a>
+                <a class="nav-button" href="{{ url_for('about') }}">ℹ️ About</a>
+                <a class="nav-button" href="{{ url_for('my_bookmarks') }}">🔖
+                    Bookmarks</a>
+            </div>
+        </div>
+
+        <div class="main-content">
+            {% block content %}{% endblock content %}
+        </div>
+
+        <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    </body>
+</html>

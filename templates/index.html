@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Front Page News</h2>
+<hr />
+<div id="newsletter-list">
+    {% for item in news_items %}
+    <div class="glass-card news-item">
+        <h3>{{ item.title }}</h3>
+        <p><small>{{ item.date }}</small></p>
+        {% if item.imageUrl %}
+        <img src="{{ item.imageUrl }}" alt="{{ item.title }}"
+            style="max-width:200px;">
+        {% endif %}
+        <div>{{ item.content|safe }}</div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock content %}

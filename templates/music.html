@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Music</h2>
+<hr />
+<div class="music-grid">
+    {% for song in songs %}
+    <div class="song-card"
+        data-song-id="{{ song.id }}"
+        data-song-title="{{ song.songTitle }}"
+        data-artist="{{ song.artist }}"
+        data-mp3url="{{ song.mp3url }}"
+        data-coverart="{{ song.coverArt }}">
+        <img
+            src="{{ song.coverArt or url_for('static', filename='img/default-album.jpg') }}"
+            alt="{{ song.songTitle }}"
+            class="song-thumbnail">
+        <div>
+            <strong>{{ song.songTitle }}</strong><br />
+            <small>{{ song.artist }}</small>
+        </div>
+        <!-- Example bookmark button -->
+        <button class="bookmark-btn"
+            data-item-id="{{ song.id }}">Bookmark</button>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Minimal player area -->
+<div id="music-player" style="margin-top:20px;">
+    <h3 id="now-playing-title">No song selected</h3>
+    <button id="play-pause">▶️</button>
+    <button id="prev-15s">⏪ -15s</button>
+    <button id="next-15s">+15s ⏩</button>
+    <input type="range" id="music-progress" min="0" max="100" value="0" />
+</div>
+{% endblock content %}
