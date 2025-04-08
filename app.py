@@ -164,5 +164,4 @@ def internal_error(error):
     return render_template('500.html'), 500
 
 if __name__ == "__main__":
-    port = int(os.getenv('PORT', 5000))
-    app.run(host='0.0.0.0', port=port, debug=os.getenv('FLASK_DEBUG', 'False').lower() == 'true')
+    app.run(debug=True, port=5001)
