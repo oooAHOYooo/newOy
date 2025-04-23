@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+
+{% block title %}{{ artist.name }} - Ahoy Indie Media{% endblock %}
+
+{% block content %}
+<div class="artist-detail-container">
+    <div class="artist-header">
+        <div class="artist-image">
+            <img src="{{ artist.image_url }}" alt="{{ artist.name }}">
+        </div>
+        <div class="artist-basic-info">
+            <h1>{{ artist.name }}</h1>
+            <p class="genre">{{ artist.genre }}</p>
+        </div>
+    </div>
+
+    <div class="artist-content">
+        <section class="bio-section">
+            <h2>Biography</h2>
+            <p>{{ artist.bio }}</p>
+        </section>
+
+        <section class="discography-section">
+            <h2>Discography</h2>
+            {% for album in artist.discography %}
+            <div class="album-card">
+                <h3>{{ album.title }} ({{ album.year }})</h3>
+                <p class="album-type">{{ album.type|title }}</p>
+                <ul class="track-list">
+                    {% for track in album.tracks %}
+                    <li>{{ track }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endfor %}
+        </section>
+
+        <section class="notable-works-section">
+            <h2>Notable Works</h2>
+            <ul class="notable-works-list">
+                {% for work in artist.notable_works %}
+                <li>{{ work }}</li>
+                {% endfor %}
+            </ul>
+        </section>
+    </div>
+</div>
+
+<style>
+    .artist-detail-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+
+    .artist-header {
+        display: flex;
+        gap: 2rem;
+        margin-bottom: 3rem;
+        align-items: center;
+    }
+
+    .artist-image {
+        width: 300px;
+        height: 300px;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .artist-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .artist-basic-info {
+        flex: 1;
+    }
+
+    .artist-basic-info h1 {
+        margin: 0;
+        font-size: 2.5rem;
+        color: #333;
+    }
+
+    .genre {
+        color: #666;
+        font-style: italic;
+        font-size: 1.2rem;
+        margin: 0.5rem 0;
+    }
+
+    .artist-content {
+        display: grid;
+        gap: 2rem;
+    }
+
+    section {
+        background: white;
+        padding: 2rem;
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    section h2 {
+        color: #333;
+        margin-top: 0;
+        margin-bottom: 1.5rem;
+        font-size: 1.8rem;
+    }
+
+    .bio-section p {
+        line-height: 1.8;
+        color: #444;
+        font-size: 1.1rem;
+    }
+
+    .album-card {
+        background: #f8f9fa;
+        padding: 1.5rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+    }
+
+    .album-card h3 {
+        margin: 0;
+        color: #333;
+        font-size: 1.4rem;
+    }
+
+    .album-type {
+        color: #666;
+        font-style: italic;
+        margin: 0.5rem 0;
+    }
+
+    .track-list {
+        list-style: none;
+        padding: 0;
+        margin: 1rem 0 0;
+    }
+
+    .track-list li {
+        padding: 0.5rem 0;
+        color: #444;
+        border-bottom: 1px solid #eee;
+    }
+
+    .track-list li:last-child {
+        border-bottom: none;
+    }
+
+    .notable-works-list {
+        list-style: none;
+        padding: 0;
+    }
+
+    .notable-works-list li {
+        padding: 0.75rem 0;
+        color: #444;
+        border-bottom: 1px solid #eee;
+    }
+
+    .notable-works-list li:last-child {
+        border-bottom: none;
+    }
+
+    @media (max-width: 768px) {
+        .artist-detail-container {
+            padding: 1rem;
+        }
+
+        .artist-header {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .artist-image {
+            width: 100%;
+            max-width: 300px;
+            margin: 0 auto;
+        }
+
+        section {
+            padding: 1.5rem;
+        }
+    }
+</style>
+{% endblock %}

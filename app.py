@@ -3,6 +3,7 @@ import json
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv
+from pathlib import Path
 
 # Load environment variables
 load_dotenv()
@@ -65,6 +66,11 @@ if os.path.exists(marketplace_file):
     with open(marketplace_file, "r", encoding="utf-8") as f:
         marketplace_data = json.load(f)
 
+# Load artist data
+def load_artists():
+    with open('data/artists.json', 'r') as f:
+        return json.load(f)['artists']
+
 
 #############
 # ROUTES
@@ -122,6 +128,19 @@ def podcast():
 @app.route("/about")
 def about():
     return render_template("about.html")
+
+@app.route('/artists')
+def artists():
+    artists_data = load_artists()
+    return render_template('artists.html', artists=artists_data)
+
+@app.route('/artist/<artist_id>')
+def artist_detail(artist_id):
+    artists_data = load_artists()
+    artist = next((a for a in artists_data if a['id'] == artist_id), None)
+    if artist is None:
+        return render_template('404.html'), 404
+    return render_template('artist_detail.html', artist=artist)
 
 
 #############
