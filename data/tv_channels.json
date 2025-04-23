@@ -1,0 +1,39 @@
+{
+    "channels": [
+        {
+            "id": "channel1",
+            "name": "Ahoy Music",
+            "description": "24/7 music videos and live performances",
+            "currentShow": "Live from the Studio",
+            "thumbnail": "https://media.giphy.com/media/3o7TKsQ8gqVrXyLhWM/giphy.gif"
+        },
+        {
+            "id": "channel2",
+            "name": "Indie Films",
+            "description": "Independent films and documentaries",
+            "currentShow": "Short Film Showcase",
+            "thumbnail": "https://media.giphy.com/media/3o7TKsQ8gqVrXyLhWM/giphy.gif"
+        },
+        {
+            "id": "channel3",
+            "name": "Live Events",
+            "description": "Live concerts and events",
+            "currentShow": "Summer Festival Live",
+            "thumbnail": "https://media.giphy.com/media/3o7TKsQ8gqVrXyLhWM/giphy.gif"
+        },
+        {
+            "id": "channel4",
+            "name": "Art & Culture",
+            "description": "Art exhibitions and cultural programs",
+            "currentShow": "Gallery Tour",
+            "thumbnail": "https://media.giphy.com/media/3o7TKsQ8gqVrXyLhWM/giphy.gif"
+        },
+        {
+            "id": "channel5",
+            "name": "Podcast Network",
+            "description": "Live podcast recordings and discussions",
+            "currentShow": "Live Podcast Hour",
+            "thumbnail": "https://media.giphy.com/media/3o7TKsQ8gqVrXyLhWM/giphy.gif"
+        }
+    ]
+} 
