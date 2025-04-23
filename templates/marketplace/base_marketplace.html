@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="marketplace">
+    <nav class="marketplace-nav glass-effect">
+        <div class="marketplace-nav-content">
+            <div class="marketplace-categories">
+                {% for category in marketplace_data.get("categories", []) %}
+                <div class="category-dropdown">
+                    <a
+                        href="{{ url_for('category_view', category_slug=category.slug) }}"
+                        class="category-link">
+                        {{ category.name }}
+                    </a>
+                    <div class="subcategories-dropdown glass-effect">
+                        {% for subcategory in category.subcategories %}
+                        <a
+                            href="{{ url_for('subcategory_view', category_slug=category.slug, subcategory_slug=subcategory.slug) }}"
+                            class="subcategory-link">
+                            {{ subcategory.name }}
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="marketplace-cart">
+                <a href="{{ url_for('view_cart') }}" class="cart-link">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="cart-count">{{ session.get('cart', [])|length
+                        }}</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="marketplace-content">
+        {% block marketplace_content %}{% endblock %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .marketplace {
+        padding: 20px;
+    }
+
+    .marketplace-nav {
+        margin-bottom: 30px;
+        padding: 15px;
+        border-radius: 8px;
+    }
+
+    .marketplace-nav-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .marketplace-categories {
+        display: flex;
+        gap: 20px;
+    }
+
+    .category-dropdown {
+        position: relative;
+    }
+
+    .category-link {
+        color: var(--text-color);
+        text-decoration: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        transition: background-color 0.3s ease;
+    }
+
+    .category-link:hover {
+        background: rgba(184, 124, 156, 0.2);
+    }
+
+    .subcategories-dropdown {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        min-width: 200px;
+        padding: 10px;
+        margin-top: 5px;
+        border-radius: 4px;
+        display: none;
+        z-index: 1000;
+    }
+
+    .category-dropdown:hover .subcategories-dropdown {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .subcategory-link {
+        color: var(--text-color);
+        text-decoration: none;
+        padding: 8px;
+        border-radius: 4px;
+        transition: background-color 0.3s ease;
+    }
+
+    .subcategory-link:hover {
+        background: rgba(184, 124, 156, 0.2);
+    }
+
+    .cart-link {
+        color: var(--text-color);
+        text-decoration: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .cart-link:hover {
+        background: rgba(184, 124, 156, 0.2);
+    }
+
+    .cart-count {
+        background: var(--secondary-color);
+        color: white;
+        padding: 2px 6px;
+        border-radius: 50%;
+        font-size: 0.8rem;
+    }
+
+    .marketplace-content {
+        margin-top: 20px;
+    }
+
+    @media (max-width: 768px) {
+        .marketplace-nav-content {
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .marketplace-categories {
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .subcategories-dropdown {
+            position: static;
+            margin-top: 5px;
+        }
+    }
+</style>
+{% endblock %}

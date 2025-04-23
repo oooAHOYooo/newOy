@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="latest-news">
+    <h1>Latest News</h1>
+    <div class="news-container">
+        {% for news_item in latest_news %}
+        <div class="news-item glass-effect">
+            <h2>{{ news_item.title }}</h2>
+            <div class="news-meta">
+                <span>{{ news_item.date }}</span>
+                <span>By {{ news_item.author }}</span>
+                <span>{{ news_item.category }}</span>
+            </div>
+            <p>{{ news_item.content }}</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

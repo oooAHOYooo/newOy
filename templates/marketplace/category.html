@@ -1,0 +1,113 @@
+{% extends "marketplace/base_marketplace.html" %}
+
+{% block marketplace_content %}
+<div class="category-view">
+    <header class="category-header glass-effect">
+        <h1>{{ category.name }}</h1>
+        <p class="category-description">{{ category.description }}</p>
+
+        <div class="subcategories-nav">
+            {% for subcategory in category.subcategories %}
+            <a
+                href="{{ url_for('subcategory_view', category_slug=category.slug, subcategory_slug=subcategory.slug) }}"
+                class="subcategory-link glass-effect">
+                {{ subcategory.name }}
+                <span class="subcategory-description">{{ subcategory.description
+                    }}</span>
+            </a>
+            {% endfor %}
+        </div>
+    </header>
+
+    <section class="category-products">
+        <div class="products-grid">
+            {% for product in products %}
+            <div class="product-card glass-effect">
+                <div class="product-image">
+                    {% if product.images %}
+                    <img
+                        src="{{ url_for('static', filename='img/products/' + product.images[0]) }}"
+                        alt="{{ product.name }}">
+                    {% endif %}
+                </div>
+                <div class="product-info">
+                    <h3>{{ product.name }}</h3>
+                    <p class="price">${{ "%.2f"|format(product.price) }}</p>
+                    <p class="description">{{ product.description }}</p>
+                    <div class="product-actions">
+                        <a
+                            href="{{ url_for('product_view', product_slug=product.slug) }}"
+                            class="view-details">View Details</a>
+                        <form action="{{ url_for('add_to_cart') }}"
+                            method="POST" class="add-to-cart-form">
+                            <input type="hidden" name="product_id"
+                                value="{{ product.id }}">
+                            <button type="submit" class="add-to-cart">Add to
+                                Cart</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+</div>
+
+{% block extra_css %}
+{{ super() }}
+<style>
+    .category-view {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .category-header {
+        padding: 2rem;
+        margin-bottom: 2rem;
+        border-radius: 12px;
+        text-align: center;
+    }
+
+    .category-header h1 {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        color: var(--text-color);
+    }
+
+    .category-description {
+        color: var(--text-color);
+        opacity: 0.8;
+        margin-bottom: 2rem;
+    }
+
+    .subcategories-nav {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+    }
+
+    .subcategory-link {
+        display: flex;
+        flex-direction: column;
+        padding: 1rem;
+        text-decoration: none;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        color: var(--text-color);
+    }
+
+    .subcategory-link:hover {
+        transform: translateY(-2px);
+        background: rgba(184, 124, 156, 0.2);
+    }
+
+    .subcategory-description {
+        font-size: 0.9rem;
+        opacity: 0.8;
+        margin-top: 0.5rem;
+    }
+
+    /* Inherit product card styles from home.html */
+</style>
+{% endblock %}
+{% endblock %}

@@ -1,0 +1,28 @@
+{
+    "newsletters": [
+        {
+            "id": 1,
+            "title": "Welcome to Our Community",
+            "date": "2024-04-23",
+            "content": "Welcome to our first newsletter! We're excited to share our journey with you.",
+            "author": "Admin",
+            "category": "Announcement"
+        },
+        {
+            "id": 2,
+            "title": "Latest Updates and Features",
+            "date": "2024-04-22",
+            "content": "Check out our new features and improvements to the platform.",
+            "author": "Admin",
+            "category": "Update"
+        },
+        {
+            "id": 3,
+            "title": "Community Spotlight",
+            "date": "2024-04-21",
+            "content": "Highlighting amazing contributions from our community members.",
+            "author": "Admin",
+            "category": "Community"
+        }
+    ]
+} 
