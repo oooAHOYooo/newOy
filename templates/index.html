@@ -1,44 +1,37 @@
 {% extends "base.html" %}
 
-{% block title %}News - Ahoy Indie Media{% endblock %}
-
-{% block content %}
-<div class="news-container">
-    <h1>Latest News</h1>
+{% block main_content %}
+<div class="container">
+    <h1>Welcome to Ahoy Indie Media</h1>
 
     {% if error %}
-    <div class="error-message">
-        {{ error }}
-    </div>
+    <div class="alert alert-danger">{{ error }}</div>
     {% endif %}
 
-    <div class="news-grid">
+    {% if news_items %}
+    <div class="row">
         {% for item in news_items %}
-        <div class="news-card">
-            <div class="news-header">
-                <h2>{{ item.title }}</h2>
-                <div class="news-meta">
-                    <span class="news-date">{{ item.date }}</span>
-                    <span class="news-author">By {{ item.author }}</span>
-                    <span class="news-category">{{ item.category }}</span>
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                {% if item.image %}
+                <img src="{{ item.image }}" class="card-img-top"
+                    alt="{{ item.title }}">
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ item.title }}</h5>
+                    <p class="card-text">{{ item.description }}</p>
+                    {% if item.link %}
+                    <a href="{{ item.link }}" class="btn btn-primary">Read
+                        More</a>
+                    {% endif %}
                 </div>
             </div>
-            <div class="news-content">
-                <p>{{ item.content }}</p>
-            </div>
-            {% if item.link %}
-            <div class="news-footer">
-                <a href="{{ item.link }}" target="_blank"
-                    class="action-button">Read More</a>
-            </div>
-            {% endif %}
-        </div>
-        {% else %}
-        <div class="no-news">
-            <p>No news items available at the moment.</p>
         </div>
         {% endfor %}
     </div>
+    {% else %}
+    <div class="alert alert-info">No news items available at the moment.</div>
+    {% endif %}
 </div>
 {% endblock %}
 

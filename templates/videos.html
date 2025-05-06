@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}Videos - Ahoy{% endblock %}
+
+{% block content %}
+<div class="row">
+    {% for video in videos %}
+    <div class="col-md-6 col-lg-4 mb-4">
+        {% include 'video_card.html' %}
+    </div>
+    {% else %}
+    <div class="col-12">
+        <div class="alert alert-info">No videos found.</div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}Admin - Add Daily Splash{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }}">{{ message }}</div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    <h1 class="mb-4">Add New Daily Splash</h1>
+
+    <form method="POST" action="{{ url_for('add_daily_splash') }}"
+        class="needs-validation" novalidate>
+        <div class="mb-3">
+            <label for="title" class="form-label">Title</label>
+            <input type="text" class="form-control" id="title" name="title"
+                required>
+            <div class="invalid-feedback">
+                Please provide a title.
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label for="content_type" class="form-label">Content Type</label>
+            <select class="form-select" id="content_type" name="content_type"
+                required>
+                <option value>Choose a type...</option>
+                <option value="article">Article</option>
+                <option value="video">Video</option>
+                <option value="quote">Quote</option>
+                <option value="image">Image</option>
+            </select>
+            <div class="invalid-feedback">
+                Please select a content type.
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label for="content" class="form-label">Content</label>
+            <textarea class="form-control" id="content" name="content" rows="10"
+                required></textarea>
+            <div class="invalid-feedback">
+                Please provide content.
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label for="media_url" class="form-label">Media URL
+                (optional)</label>
+            <input type="url" class="form-control" id="media_url"
+                name="media_url">
+            <div class="form-text">
+                For videos or images, provide the URL to the media file.
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label for="publish_date" class="form-label">Publish Date</label>
+            <input type="date" class="form-control" id="publish_date"
+                name="publish_date"
+                value="{{ today.strftime('%Y-%m-%d') }}" required>
+            <div class="invalid-feedback">
+                Please select a publish date.
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <button type="submit" class="btn btn-primary">Add Daily
+                Splash</button>
+            <a href="{{ url_for('admin_daily_splash') }}"
+                class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+{% block scripts %}
+<script>
+// Form validation
+(function () {
+    'use strict'
+    var forms = document.querySelectorAll('.needs-validation')
+    Array.prototype.slice.call(forms).forEach(function (form) {
+        form.addEventListener('submit', function (event) {
+            if (!form.checkValidity()) {
+                event.preventDefault()
+                event.stopPropagation()
+            }
+            form.classList.add('was-validated')
+        }, false)
+    })
+})()
+</script>
+{% endblock %}
+{% endblock %}

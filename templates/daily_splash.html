@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}Daily Splash - {{ content.title if content else
+'No Content Available' }}{% endblock %}
+
+{% block main_content %}
+<div class="daily-splash-container">
+    {% if error %}
+    <div class="alert alert-danger">
+        {{ error }}
+    </div>
+    {% endif %}
+
+    {% if content %}
+    <div class="daily-splash-content">
+        <div class="daily-splash-header">
+            <h1 class="daily-splash-title">{{ content.title }}</h1>
+            <div class="daily-splash-meta">
+                <span class="publish-date">{{
+                    content.publish_date.strftime('%B %d, %Y') }}</span>
+                {% if content.author %}
+                <span class="author">by {{ content.author.username }}</span>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if content.media_url %}
+        <div class="daily-splash-media">
+            {% if content.content_type == 'video' %}
+            <video class="media-content" controls>
+                <source src="{{ content.media_url }}" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            {% else %}
+            <img src="{{ content.media_url }}" alt="{{ content.title }}"
+                class="media-content">
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <div class="daily-splash-body">
+            {{ content.content|safe }}
+        </div>
+
+        <div class="daily-splash-footer">
+            <a href="{{ url_for('daily_splash_archive') }}"
+                class="archive-link">
+                <i class="fas fa-archive"></i> View Archive
+            </a>
+        </div>
+    </div>
+    {% else %}
+    <div class="no-content-message">
+        <i class="fas fa-sun fa-3x mb-3"></i>
+        <h2>No Daily Splash Available</h2>
+        <p>Check back tomorrow for new content!</p>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.daily-splash-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.daily-splash-header {
+    margin-bottom: 2rem;
+}
+
+.daily-splash-title {
+    font-size: 2.5rem;
+    color: #fff;
+    margin-bottom: 1rem;
+}
+
+.daily-splash-meta {
+    color: #888;
+    font-size: 0.9rem;
+}
+
+.daily-splash-meta span {
+    margin-right: 1rem;
+}
+
+.daily-splash-media {
+    margin-bottom: 2rem;
+}
+
+.media-content {
+    width: 100%;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.daily-splash-body {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: #e0e0e0;
+}
+
+.daily-splash-footer {
+    margin-top: 3rem;
+    padding-top: 1rem;
+    border-top: 1px solid #333;
+}
+
+.archive-link {
+    color: #007bff;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.archive-link:hover {
+    color: #0056b3;
+    text-decoration: underline;
+}
+
+.no-content-message {
+    text-align: center;
+    padding: 3rem;
+    color: #888;
+}
+
+.no-content-message i {
+    color: #ffd700;
+    margin-bottom: 1rem;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,101 @@
+<div class="card bg-dark text-light mb-3 content-card"
+    x-data="{ editing: false }" :class="{ 'editing': editing }">
+    <div class="content-view">
+        {% if current_user.is_authenticated and current_user.is_admin %}
+        <button class="admin-edit-icon btn btn-sm btn-outline-light"
+            @click="editing = true">
+            <i class="fas fa-edit"></i>
+        </button>
+        {% endif %}
+
+        <div class="card-body">
+            <h5 class="card-title">{{ video.title }}</h5>
+            <p class="card-text">{{ video.description }}</p>
+            <div class="ratio ratio-16x9">
+                <video controls>
+                    <source src="{{ video.src }}" type="{{ video.type }}">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+            <div class="mt-2">
+                <span class="badge bg-secondary">{{ video.category }}</span>
+            </div>
+        </div>
+    </div>
+
+    {% if current_user.is_authenticated and current_user.is_admin %}
+    <div class="edit-form">
+        <div class="card-body">
+            <form @submit.prevent="submitForm">
+                <div class="mb-3">
+                    <label for="edit-title-{{ video.id }}"
+                        class="form-label">Title</label>
+                    <input type="text" class="form-control bg-dark text-light"
+                        id="edit-title-{{ video.id }}"
+                        x-model="formData.title" required>
+                </div>
+                <div class="mb-3">
+                    <label for="edit-description-{{ video.id }}"
+                        class="form-label">Description</label>
+                    <textarea class="form-control bg-dark text-light"
+                        id="edit-description-{{ video.id }}"
+                        x-model="formData.description" rows="3"></textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="edit-url-{{ video.id }}"
+                        class="form-label">Video URL</label>
+                    <input type="url" class="form-control bg-dark text-light"
+                        id="edit-url-{{ video.id }}"
+                        x-model="formData.url" required>
+                </div>
+                <div class="mb-3">
+                    <label for="edit-category-{{ video.id }}"
+                        class="form-label">Category</label>
+                    <input type="text" class="form-control bg-dark text-light"
+                        id="edit-category-{{ video.id }}"
+                        x-model="formData.category" required>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <button type="button" class="btn btn-secondary"
+                        @click="editing = false">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save
+                        Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+document.addEventListener('alpine:init', () => {
+    Alpine.data('videoCard', () => ({
+        editing: false,
+        formData: {
+            title: '{{ video.title }}',
+            description: '{{ video.description }}',
+            url: '{{ video.src }}',
+            category: '{{ video.category }}'
+        },
+        submitForm() {
+            fetch('/admin/videos/update', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    video_id: {{ video.id }},
+                    ...this.formData
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    this.editing = false;
+                    location.reload();
+                }
+            });
+        }
+    }));
+});
+</script>

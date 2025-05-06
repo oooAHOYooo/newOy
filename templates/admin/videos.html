@@ -1,82 +1,83 @@
 {% extends "base.html" %}
 
-{% block title %}Media - Ahoy Indie Media{% endblock %}
+{% block title %}Admin Videos - Ahoy Admin{% endblock %}
 
-{% block content %}
-<div class="media-container">
-    <h1>Video Content</h1>
-
-    {% if current_user.is_admin %}
-    <div class="admin-actions mb-3">
-        <button class="btn btn-primary" data-bs-toggle="modal"
-            data-bs-target="#addVideoModal">
-            <i class="fas fa-plus"></i> Add New Video
-        </button>
-    </div>
-    {% endif %}
-
-    <div class="search-container">
-        <input type="text" id="search-input" placeholder="Search videos...">
-        <div class="filter-buttons">
-            <button class="filter-btn active" data-filter="all">All</button>
-            <button class="filter-btn" data-filter="featured">Featured</button>
-            <button class="filter-btn" data-filter="recent">Recent</button>
+{% block admin_content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Video Management</h2>
+        <div>
+            <button class="btn btn-primary me-2" id="importVideos">
+                <i class="fas fa-file-import"></i> Import Videos
+            </button>
+            <button class="btn btn-primary" data-bs-toggle="modal"
+                data-bs-target="#addVideoModal">
+                <i class="fas fa-plus"></i> Add New Video
+            </button>
         </div>
     </div>
 
-    <div class="videos-grid">
-        {% for video in videos %}
-        <div class="video-card">
-            <div class="video-thumbnail">
-                <img src="{{ video.thumbnail }}" alt="{{ video.title }}">
-                <button class="play-btn" data-video-url="{{ video.url }}">
-                    <i class="fas fa-play"></i>
-                </button>
-                {% if current_user.is_admin %}
-                <div class="admin-overlay">
-                    <button class="edit-btn" data-bs-toggle="modal"
-                        data-bs-target="#editVideoModal"
-                        data-video-id="{{ video.id }}"
-                        data-video-title="{{ video.title }}"
-                        data-video-description="{{ video.description }}"
-                        data-video-url="{{ video.url }}"
-                        data-video-thumbnail="{{ video.thumbnail }}">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="delete-btn" data-video-id="{{ video.id }}">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-                {% endif %}
-            </div>
-            <div class="video-info">
-                <h3>{{ video.title }}</h3>
-                <p>{{ video.description }}</p>
-                <div class="video-meta">
-                    <span><i class="fas fa-calendar"></i> {{ video.date
-                        }}</span>
-                    <span><i class="fas fa-clock"></i> {{ video.duration
-                        }}</span>
-                </div>
-            </div>
-            <div class="video-actions">
-                <button class="bookmark-btn" data-video-id="{{ video.id }}">
-                    <i class="fas fa-bookmark"></i>
-                </button>
-                <button class="share-btn" data-video-id="{{ video.id }}">
-                    <i class="fas fa-share-alt"></i>
-                </button>
+    <div class="card">
+        <div
+            class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">All Videos</h5>
+            <a href="{{ url_for('admin_dashboard') }}"
+                class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+            </a>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Title</th>
+                            <th>Category</th>
+                            <th>Created At</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for video in videos %}
+                        <tr>
+                            <td>{{ video.id }}</td>
+                            <td>{{ video.title }}</td>
+                            <td>{{ video.category }}</td>
+                            <td>{{
+                                video.created_at.strftime('%Y-%m-%d %H:%M:%S')
+                                }}</td>
+                            <td>
+                                <a
+                                    href="{{ url_for('video_detail', video_id=video.id) }}"
+                                    class="btn btn-sm btn-info">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <button class="btn btn-sm btn-warning edit-btn"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#editVideoModal"
+                                    data-video-id="{{ video.id }}"
+                                    data-video-title="{{ video.title }}"
+                                    data-video-description="{{ video.description }}"
+                                    data-video-url="{{ video.src }}"
+                                    data-video-thumbnail="{{ video.thumbnail }}"
+                                    data-video-category="{{ video.category }}">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger delete-btn"
+                                    data-video-id="{{ video.id }}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
-        {% else %}
-        <div class="no-videos">
-            <p>No videos available at the moment.</p>
-        </div>
-        {% endfor %}
     </div>
 </div>
 
-{% if current_user.is_admin %}
 <!-- Add Video Modal -->
 <div class="modal fade" id="addVideoModal" tabindex="-1">
     <div class="modal-dialog">
@@ -109,6 +110,17 @@
                             URL</label>
                         <input type="url" class="form-control" id="thumbnail"
                             name="thumbnail">
+                    </div>
+                    <div class="mb-3">
+                        <label for="category"
+                            class="form-label">Category</label>
+                        <select class="form-control" id="category"
+                            name="category">
+                            <option value="general">General</option>
+                            <option value="tutorial">Tutorial</option>
+                            <option value="music">Music</option>
+                            <option value="podcast">Podcast</option>
+                        </select>
                     </div>
                 </form>
             </div>
@@ -157,6 +169,17 @@
                         <input type="url" class="form-control"
                             id="edit-thumbnail" name="thumbnail">
                     </div>
+                    <div class="mb-3">
+                        <label for="edit-category"
+                            class="form-label">Category</label>
+                        <select class="form-control" id="edit-category"
+                            name="category">
+                            <option value="general">General</option>
+                            <option value="tutorial">Tutorial</option>
+                            <option value="music">Music</option>
+                            <option value="podcast">Podcast</option>
+                        </select>
+                    </div>
                 </form>
             </div>
             <div class="modal-footer">
@@ -168,61 +191,11 @@
         </div>
     </div>
 </div>
-{% endif %}
 {% endblock %}
 
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Search functionality
-    const searchInput = document.getElementById('search-input');
-    const videoCards = document.querySelectorAll('.video-card');
-    
-    searchInput.addEventListener('input', function() {
-        const searchTerm = this.value.toLowerCase();
-        videoCards.forEach(card => {
-            const title = card.querySelector('h3').textContent.toLowerCase();
-            const description = card.querySelector('p').textContent.toLowerCase();
-            if (title.includes(searchTerm) || description.includes(searchTerm)) {
-                card.style.display = 'block';
-            } else {
-                card.style.display = 'none';
-            }
-        });
-    });
-
-    // Filter functionality
-    const filterButtons = document.querySelectorAll('.filter-btn');
-    filterButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            filterButtons.forEach(btn => btn.classList.remove('active'));
-            this.classList.add('active');
-            // Implement filter logic here
-        });
-    });
-
-    // Bookmark functionality
-    const bookmarkButtons = document.querySelectorAll('.bookmark-btn');
-    bookmarkButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const videoId = this.dataset.videoId;
-            fetch('/bookmark', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: `item_id=${videoId}&item_type=video`
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    this.classList.toggle('active');
-                }
-            });
-        });
-    });
-
-    {% if current_user.is_admin %}
     // Edit Video Modal
     const editVideoModal = document.getElementById('editVideoModal');
     editVideoModal.addEventListener('show.bs.modal', function(event) {
@@ -232,12 +205,14 @@ document.addEventListener('DOMContentLoaded', function() {
         const description = button.getAttribute('data-video-description');
         const url = button.getAttribute('data-video-url');
         const thumbnail = button.getAttribute('data-video-thumbnail');
+        const category = button.getAttribute('data-video-category');
 
         document.getElementById('edit-video-id').value = videoId;
         document.getElementById('edit-title').value = title;
         document.getElementById('edit-description').value = description;
         document.getElementById('edit-url').value = url;
         document.getElementById('edit-thumbnail').value = thumbnail;
+        document.getElementById('edit-category').value = category;
     });
 
     // Save Video
@@ -253,7 +228,12 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             if (data.success) {
                 location.reload();
+            } else {
+                alert('Error: ' + data.error);
             }
+        })
+        .catch(error => {
+            alert('Error saving video: ' + error);
         });
     });
 
@@ -270,7 +250,12 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             if (data.success) {
                 location.reload();
+            } else {
+                alert('Error: ' + data.error);
             }
+        })
+        .catch(error => {
+            alert('Error updating video: ' + error);
         });
     });
 
@@ -291,12 +276,40 @@ document.addEventListener('DOMContentLoaded', function() {
                 .then(data => {
                     if (data.success) {
                         location.reload();
+                    } else {
+                        alert('Error: ' + data.error);
                     }
+                })
+                .catch(error => {
+                    alert('Error deleting video: ' + error);
                 });
             }
         });
     });
-    {% endif %}
+
+    // Import Videos Button
+    document.getElementById('importVideos').addEventListener('click', function() {
+        if (confirm('This will replace all existing videos with the imported data. Continue?')) {
+            fetch('/admin/import-videos', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Videos imported successfully!');
+                    location.reload();
+                } else {
+                    alert('Error importing videos: ' + data.error);
+                }
+            })
+            .catch(error => {
+                alert('Error importing videos: ' + error);
+            });
+        }
+    });
 });
 </script>
 {% endblock %}

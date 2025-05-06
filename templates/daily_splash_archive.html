@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Daily Splash Archive{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    {% if error %}
+    <div class="alert alert-danger">
+        {{ error }}
+    </div>
+    {% endif %}
+
+    <h1 class="mb-4">Daily Splash Archive</h1>
+
+    {% if contents.items %}
+    <div class="row">
+        {% for content in contents.items %}
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                {% if content.media_url %}
+                <img src="{{ content.media_url }}" class="card-img-top"
+                    alt="{{ content.title }}">
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ content.title }}</h5>
+                    <p class="card-text text-muted">
+                        {{ content.publish_date.strftime('%B %d, %Y') }}
+                        {% if content.author %}
+                        by {{ content.author.username }}
+                        {% endif %}
+                    </p>
+                    <p class="card-text">{{ content.content|truncate(150) }}</p>
+                    <a
+                        href="{{ url_for('daily_splash') }}?date={{ content.publish_date.strftime('%Y-%m-%d') }}"
+                        class="btn btn-primary">Read More</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if contents.has_prev %}
+            <li class="page-item">
+                <a class="page-link"
+                    href="{{ url_for('daily_splash_archive', page=contents.prev_num) }}">Previous</a>
+            </li>
+            {% endif %}
+
+            {% for page_num in contents.iter_pages(left_edge=2, left_current=2,
+            right_current=3, right_edge=2) %}
+            {% if page_num %}
+            {% if page_num == contents.page %}
+            <li class="page-item active">
+                <span class="page-link">{{ page_num }}</span>
+            </li>
+            {% else %}
+            <li class="page-item">
+                <a class="page-link"
+                    href="{{ url_for('daily_splash_archive', page=page_num) }}">{{
+                    page_num }}</a>
+            </li>
+            {% endif %}
+            {% else %}
+            <li class="page-item disabled">
+                <span class="page-link">...</span>
+            </li>
+            {% endif %}
+            {% endfor %}
+
+            {% if contents.has_next %}
+            <li class="page-item">
+                <a class="page-link"
+                    href="{{ url_for('daily_splash_archive', page=contents.next_num) }}">Next</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% else %}
+    <div class="text-center">
+        <h2>No Content Available</h2>
+        <p>Check back later for new content!</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
