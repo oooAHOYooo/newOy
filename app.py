@@ -1,34 +1,38 @@
 import os
 import json
+import sqlite3
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
-from flask_sqlalchemy import SQLAlchemy
-from dotenv import load_dotenv
 from pathlib import Path
-
-# Load environment variables
-load_dotenv()
+import time
+from datetime import datetime
 
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', 'your-secret-key-here')  # Change this in production
 
-# If you do NOT want to use a DB at all, you can skip everything related to db/SQLAlchemy
+#############
+# DATABASE
+#############
+def get_db():
+    """Get database connection"""
+    db = sqlite3.connect('data/ahoy.db')
+    db.row_factory = sqlite3.Row  # This enables column access by name
+    return db
 
-app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv('DATABASE_URL', 'sqlite:///bookmarks.db')
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-db = SQLAlchemy(app)
+def init_db():
+    """Initialize database with tables"""
+    db = get_db()
+    with app.open_resource('schema.sql') as f:
+        db.executescript(f.read().decode('utf8'))
+    db.close()
 
-class Bookmark(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.String(100), nullable=False)
-    item_id = db.Column(db.Integer, nullable=False)
-    item_type = db.Column(db.String(50), nullable=False)
-
-    def __repr__(self):
-        return f"<Bookmark user={self.user_id}, item_id={self.item_id}, item_type={self.item_type}>"
-
-with app.app_context():
-    db.create_all()
-
+def init_app():
+    """Initialize the application"""
+    # Ensure data directory exists
+    os.makedirs('data', exist_ok=True)
+    
+    # Initialize database if it doesn't exist
+    if not os.path.exists('data/ahoy.db'):
+        init_db()
 
 #############
 # HELPER
@@ -38,6 +42,19 @@ def get_current_user_id():
     # For now, store a "user_id" in session or just default to 'guest'.
     return session.get("user_id", "guest")
 
+def load_bookmarks():
+    """Load bookmarks from JSON file"""
+    bookmarks_file = os.path.join(DATA_DIR, "bookmarks.json")
+    if os.path.exists(bookmarks_file):
+        with open(bookmarks_file, "r", encoding="utf-8") as f:
+            return json.load(f)
+    return {"bookmarks": []}
+
+def save_bookmarks(bookmarks):
+    """Save bookmarks to JSON file"""
+    bookmarks_file = os.path.join(DATA_DIR, "bookmarks.json")
+    with open(bookmarks_file, "w", encoding="utf-8") as f:
+        json.dump(bookmarks, f, indent=2)
 
 #############
 # LOAD JSON
@@ -70,7 +87,6 @@ if os.path.exists(marketplace_file):
 def load_artists():
     with open('data/artists.json', 'r') as f:
         return json.load(f)['artists']
-
 
 #############
 # ROUTES
@@ -147,16 +163,12 @@ def artist_detail(artist_id):
         return render_template('404.html'), 404
     return render_template('artist_detail.html', artist=artist)
 
-
 #############
 # BOOKMARK 
 #############
 @app.route("/bookmark", methods=["POST"])
 def bookmark():
-    """
-    A minimal endpoint to bookmark an item (e.g. a song).
-    We expect a form or JSON with item_id, item_type.
-    """
+    """Add a bookmark"""
     try:
         user_id = get_current_user_id()
         item_id = request.form.get("item_id")
@@ -165,25 +177,33 @@ def bookmark():
         if not item_id:
             return jsonify({"error": "No item_id provided"}), 400
 
-        new_bm = Bookmark(user_id=user_id, item_id=item_id, item_type=item_type)
-        db.session.add(new_bm)
-        db.session.commit()
+        db = get_db()
+        db.execute(
+            'INSERT INTO bookmarks (user_id, item_id, item_type, created_at) VALUES (?, ?, ?, ?)',
+            (user_id, item_id, item_type, datetime.now().isoformat())
+        )
+        db.commit()
+        db.close()
+        
         return jsonify({"success": True, "item_id": item_id, "item_type": item_type})
     except Exception as e:
         app.logger.error(f"Error in bookmark route: {str(e)}")
         return jsonify({"error": "Internal server error"}), 500
 
-
 @app.route("/my-bookmarks")
 def my_bookmarks():
     try:
         user_id = get_current_user_id()
-        results = Bookmark.query.filter_by(user_id=user_id).all()
-        return render_template("bookmarks.html", bookmarks=results)
+        db = get_db()
+        bookmarks = db.execute(
+            'SELECT * FROM bookmarks WHERE user_id = ? ORDER BY created_at DESC',
+            (user_id,)
+        ).fetchall()
+        db.close()
+        return render_template("bookmarks.html", bookmarks=bookmarks)
     except Exception as e:
         app.logger.error(f"Error in my_bookmarks route: {str(e)}")
         return render_template("bookmarks.html", bookmarks=[], error="Failed to load bookmarks")
-
 
 #############
 # SITEMAP
@@ -204,7 +224,6 @@ def not_found_error(error):
 
 @app.errorhandler(500)
 def internal_error(error):
-    db.session.rollback()
     return render_template('500.html'), 500
 
 #############
@@ -391,6 +410,9 @@ def add_to_cart():
 @app.route("/settings")
 def settings():
     return render_template("settings.html")
+
+# Initialize the app
+init_app()
 
 if __name__ == "__main__":
     app.run(debug=True, port=5001)
