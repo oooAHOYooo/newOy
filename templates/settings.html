@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="settings-page">
+  <h1>Settings</h1>
+  <button class="clear-cache-btn" onclick="localStorage.clear(); sessionStorage.clear(); location.reload();">Clear Cache & Reload</button>
+</div>
+{% endblock %} 

@@ -85,15 +85,18 @@ def news():
     try:
         # Get newsletters and format them for the template
         newsletters = newsletter_data.get("newsletters", [])
+        categories = newsletter_data.get("categories", [])
         formatted_news = []
         
         for newsletter in newsletters:
+            category_id = newsletter.get("categoryId", "")
+            category_label = next((cat["label"] for cat in categories if cat["id"] == category_id), "")
             formatted_news.append({
                 "title": newsletter.get("title", "Untitled"),
                 "date": newsletter.get("date", ""),
                 "content": newsletter.get("content", ""),
-                "author": newsletter.get("author", ""),
-                "category": newsletter.get("category", "")
+                "category": category_label,
+                "tags": newsletter.get("tags", [])
             })
             
         # Sort by date, newest first
@@ -110,7 +113,9 @@ def news():
 
 @app.route("/media")
 def media():
-    return render_template("media.html")
+    with open(os.path.join(DATA_DIR, "tv_channels.json"), "r", encoding="utf-8") as f:
+        tv_data = json.load(f)
+    return render_template("media.html", channels=tv_data["channels"])
 
 @app.route("/music")
 def music():
@@ -382,6 +387,10 @@ def add_to_cart():
         "message": "Product added to cart",
         "cart_count": len(cart)
     })
+
+@app.route("/settings")
+def settings():
+    return render_template("settings.html")
 
 if __name__ == "__main__":
     app.run(debug=True, port=5001)

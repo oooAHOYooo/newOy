@@ -3,114 +3,249 @@
 {% block title %}Media - Ahoy Indie Media{% endblock %}
 
 {% block content %}
+<pre>{{ channels|tojson }}</pre>
 <div class="media-container">
-    <h1>Video Content</h1>
+    <h1>Ahoy TV</h1>
 
-    <div class="search-container">
-        <input type="text" id="search-input" placeholder="Search videos...">
-        <div class="filter-buttons">
-            <button class="filter-btn active" data-filter="all">All</button>
-            <button class="filter-btn" data-filter="featured">Featured</button>
-            <button class="filter-btn" data-filter="recent">Recent</button>
+    <!-- Main Video Player -->
+    <div class="main-player">
+        <video id="main-video" controls>
+            <source src="" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+        <div class="now-playing">
+            <h2 id="current-title">Select a show to start watching</h2>
+            <p id="current-description"></p>
         </div>
     </div>
 
-    <div class="videos-grid">
-        {% for video in videos %}
-        <div class="video-card">
-            <div class="video-thumbnail">
-                <img src="{{ video.thumbnail }}" alt="{{ video.title }}">
-                <button class="play-btn" data-video-url="{{ video.url }}">
-                    <i class="fas fa-play"></i>
-                </button>
-            </div>
-            <div class="video-info">
-                <h3>{{ video.title }}</h3>
-                <p>{{ video.description }}</p>
-                <div class="video-meta">
-                    <span><i class="fas fa-calendar"></i> {{ video.date
-                        }}</span>
-                    <span><i class="fas fa-clock"></i> {{ video.duration
-                        }}</span>
-                </div>
-            </div>
-            <div class="video-actions">
-                <button class="bookmark-btn" data-video-id="{{ video.id }}">
-                    <i class="fas fa-bookmark"></i>
-                </button>
-                <button class="share-btn" data-video-id="{{ video.id }}">
-                    <i class="fas fa-share-alt"></i>
-                </button>
+    <!-- TV Guide Grid -->
+    <div class="tv-guide-grid">
+        <div class="guide-header-row">
+            <div class="guide-time-label"></div>
+            <div class="guide-times">
+                <span>Now</span>
+                <span>+30 min</span>
+                <span>+1 hr</span>
+                <span>+1.5 hr</span>
             </div>
         </div>
-        {% else %}
-        <div class="no-videos">
-            <p>No videos available at the moment.</p>
+        {% for channel in channels %}
+        <div class="guide-row">
+            <div class="guide-channel-info">
+                <img src="{{ channel.thumbnail }}" alt="{{ channel.name }}" class="guide-channel-thumb">
+                <div class="guide-channel-meta">
+                    <div class="guide-channel-name">{{ channel.name }}</div>
+                    <div class="guide-channel-show">{{ channel.currentShow }}</div>
+                </div>
+            </div>
+            <div class="guide-channel-shows">
+                {% for video in channel.content %}
+                <div class="guide-show-block video-item" data-video-src="{{ video.src }}" data-video-title="{{ video.title }}">
+                    <div class="guide-show-title">{{ video.title }}</div>
+                    <img src="{{ video.thumbnail }}" alt="{{ video.title }}">
+                </div>
+                {% endfor %}
+            </div>
         </div>
         {% endfor %}
     </div>
 </div>
 {% endblock %}
 
+{% block extra_css %}
+<style>
+.media-container {
+    padding: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.main-player {
+    position: relative;
+    background: #000;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+#main-video {
+    width: 100%;
+    aspect-ratio: 16/9;
+    object-fit: contain;
+}
+
+.now-playing {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 20px;
+    background: linear-gradient(transparent, rgba(0,0,0,0.8));
+    color: #fff;
+}
+
+.tv-guide-grid {
+    background: #222;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.12);
+    overflow: hidden;
+    margin-top: 30px;
+    padding-bottom: 10px;
+}
+
+.guide-header-row {
+    display: flex;
+    align-items: center;
+    background: #181818;
+    color: #bbb;
+    font-size: 1em;
+    padding: 10px 0 10px 180px;
+    border-bottom: 1px solid #333;
+}
+
+.guide-time-label {
+    width: 180px;
+}
+
+.guide-times {
+    display: flex;
+    gap: 120px;
+    flex: 1;
+}
+
+.guide-times span {
+    min-width: 120px;
+    text-align: center;
+    font-size: 0.95em;
+    color: #bbb;
+}
+
+.guide-row {
+    display: flex;
+    align-items: stretch;
+    border-bottom: 1px solid #333;
+    min-height: 100px;
+}
+
+.guide-channel-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 180px;
+    background: #181818;
+    padding: 10px 10px 10px 20px;
+}
+
+.guide-channel-thumb {
+    width: 56px;
+    height: 56px;
+    object-fit: cover;
+    border-radius: 6px;
+    background: #333;
+}
+
+.guide-channel-meta {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.guide-channel-name {
+    font-weight: bold;
+    color: #fff;
+    font-size: 1.05em;
+}
+
+.guide-channel-show {
+    color: #bbb;
+    font-size: 0.95em;
+    margin-top: 2px;
+}
+
+.guide-channel-shows {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex: 1;
+    padding: 10px 0 10px 20px;
+    overflow-x: auto;
+}
+
+.guide-show-block {
+    background: #333;
+    border-radius: 6px;
+    min-width: 180px;
+    max-width: 220px;
+    padding: 10px;
+    color: #fff;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+.guide-show-block:hover {
+    background: #444;
+    transform: scale(1.04);
+}
+
+.guide-show-title {
+    font-size: 0.98em;
+    font-weight: 500;
+    margin-bottom: 8px;
+    text-align: center;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+}
+
+.guide-show-block img {
+    width: 100%;
+    height: 70px;
+    object-fit: cover;
+    border-radius: 4px;
+    margin-bottom: 2px;
+}
+
+@media (max-width: 900px) {
+    .guide-header-row, .guide-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .guide-channel-info, .guide-channel-shows {
+        width: 100%;
+        padding: 10px;
+    }
+    .guide-times {
+        gap: 30px;
+    }
+}
+</style>
+{% endblock %}
+
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Search functionality
-    const searchInput = document.getElementById('search-input');
-    const videoCards = document.querySelectorAll('.video-card');
-    
-    searchInput.addEventListener('input', function() {
-        const searchTerm = this.value.toLowerCase();
-        videoCards.forEach(card => {
-            const title = card.querySelector('h3').textContent.toLowerCase();
-            const description = card.querySelector('p').textContent.toLowerCase();
-            if (title.includes(searchTerm) || description.includes(searchTerm)) {
-                card.style.display = 'block';
-            } else {
-                card.style.display = 'none';
-            }
-        });
-    });
+    const mainVideo = document.getElementById('main-video');
+    const currentTitle = document.getElementById('current-title');
+    const currentDescription = document.getElementById('current-description');
 
-    // Filter functionality
-    const filterButtons = document.querySelectorAll('.filter-btn');
-    filterButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            filterButtons.forEach(btn => btn.classList.remove('active'));
+    // Handle video selection
+    document.querySelectorAll('.video-item').forEach(item => {
+        item.addEventListener('click', function() {
+            const videoSrc = this.dataset.videoSrc;
+            const videoTitle = this.dataset.videoTitle;
+            mainVideo.src = videoSrc;
+            currentTitle.textContent = videoTitle;
+            mainVideo.play();
+            document.querySelectorAll('.video-item').forEach(v => v.classList.remove('active'));
             this.classList.add('active');
-            // Implement filter logic here
-        });
-    });
-
-    // Bookmark functionality
-    const bookmarkButtons = document.querySelectorAll('.bookmark-btn');
-    bookmarkButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const videoId = this.dataset.videoId;
-            fetch('/bookmark', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: `item_id=${videoId}&item_type=video`
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    this.classList.toggle('active');
-                }
-            })
-            .catch(error => console.error('Error:', error));
-        });
-    });
-
-    // Share functionality
-    const shareButtons = document.querySelectorAll('.share-btn');
-    shareButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const videoId = this.dataset.videoId;
-            // Implement share functionality here
-            alert('Share functionality coming soon!');
         });
     });
 });

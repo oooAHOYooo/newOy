@@ -12,6 +12,12 @@
     </head>
 
     <body>
+        <div class="user-badge-container">
+          <a href="/account" class="user-badge">
+            {{ session.get('user_id', 'guest') }}
+            <span class="settings-cog" title="Account"><i class="fas fa-cog"></i></span>
+          </a>
+        </div>
         <!-- A simple sidebar -->
         <div class="left-dashboard">
             <div class="logo-container">
