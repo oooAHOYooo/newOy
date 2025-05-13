@@ -52,10 +52,22 @@ function updateNowPlaying() {
     const titleElement = document.getElementById('current-song-title');
     const artistElement = document.getElementById('current-artist');
     const albumArtElement = document.getElementById('current-album-art');
+    const musicPlayer = document.querySelector('.music-player');
+    const albumArt = document.querySelector('.album-art');
     
     if (titleElement) titleElement.textContent = currentSong.title;
     if (artistElement) artistElement.textContent = currentSong.artist;
     if (albumArtElement) albumArtElement.src = currentSong.albumArt;
+    
+    // Add active and playing states
+    if (musicPlayer) {
+        musicPlayer.classList.add('active', 'playing');
+        // Reset fade timer when song changes
+        resetFadeTimer();
+    }
+    if (albumArt) {
+        albumArt.classList.add('glow-playing');
+    }
 }
 
 // Update progress bar
@@ -101,15 +113,34 @@ function seek(e) {
 function playNextSong() {
     // Implement playlist functionality here
     console.log('Song ended, implement playlist functionality');
+    
+    // Remove active states when song ends
+    const musicPlayer = document.querySelector('.music-player');
+    const albumArt = document.querySelector('.album-art');
+    
+    if (musicPlayer) {
+        musicPlayer.classList.remove('active', 'playing');
+    }
+    if (albumArt) {
+        albumArt.classList.remove('glow-playing');
+    }
 }
 
 // Handle player errors
 function handlePlayerError(error) {
     console.error('Audio player error:', error);
-    // Show error message to user
     const nowPlayingWidget = document.getElementById('now-playing-widget');
+    const musicPlayer = document.querySelector('.music-player');
+    const albumArt = document.querySelector('.album-art');
+    
     if (nowPlayingWidget) {
         nowPlayingWidget.classList.add('error');
+    }
+    if (musicPlayer) {
+        musicPlayer.classList.remove('active', 'playing');
+    }
+    if (albumArt) {
+        albumArt.classList.remove('glow-playing');
     }
 }
 
@@ -117,10 +148,25 @@ function handlePlayerError(error) {
 function togglePlayPause() {
     if (!audioPlayer) return;
     
+    const musicPlayer = document.querySelector('.music-player');
+    const albumArt = document.querySelector('.album-art');
+    
     if (isPlaying) {
         audioPlayer.pause();
+        if (musicPlayer) {
+            musicPlayer.classList.remove('playing');
+            // Start fade timer when paused
+            resetFadeTimer();
+        }
+        if (albumArt) albumArt.classList.remove('glow-playing');
     } else {
         audioPlayer.play();
+        if (musicPlayer) {
+            musicPlayer.classList.add('playing');
+            // Reset fade timer when playing
+            resetFadeTimer();
+        }
+        if (albumArt) albumArt.classList.add('glow-playing');
     }
     
     isPlaying = !isPlaying;
@@ -185,6 +231,42 @@ function handleNavClick() {
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize audio player
     initAudioPlayer();
+    
+    // Initialize music player fade timer
+    const musicPlayer = document.querySelector('.music-player');
+    let fadeTimeoutId;
+    
+    function resetFadeTimer() {
+        if (!musicPlayer) return;
+        
+        musicPlayer.classList.remove('dimmed');
+        clearTimeout(fadeTimeoutId);
+        fadeTimeoutId = setTimeout(() => {
+            musicPlayer.classList.add('dimmed');
+        }, 3000);
+    }
+    
+    // Listen for any interaction inside the music player
+    if (musicPlayer) {
+        ['mousemove', 'touchstart', 'keydown'].forEach(evt => {
+            musicPlayer.addEventListener(evt, resetFadeTimer);
+        });
+        
+        // Also reset timer on player interactions
+        const controls = musicPlayer.querySelectorAll('button');
+        controls.forEach(button => {
+            button.addEventListener('click', resetFadeTimer);
+        });
+        
+        // Reset timer on progress bar interaction
+        const progressBar = musicPlayer.querySelector('.progress-bar');
+        if (progressBar) {
+            progressBar.addEventListener('click', resetFadeTimer);
+        }
+        
+        // Initial start
+        resetFadeTimer();
+    }
     
     // Sidebar toggle
     const toggleBtn = document.querySelector('.toggle-sidebar-btn');
