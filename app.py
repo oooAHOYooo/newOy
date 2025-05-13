@@ -498,6 +498,14 @@ def add_to_cart():
 def settings():
     return render_template("settings.html")
 
+@app.route("/api/theme", methods=["GET", "POST"])
+def handle_theme():
+    if request.method == "POST":
+        theme = request.json.get("theme", "default")
+        session["theme"] = theme
+        return jsonify({"success": True, "theme": theme})
+    return jsonify({"theme": session.get("theme", "default")})
+
 # Initialize the app
 init_app()
 

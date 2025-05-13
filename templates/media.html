@@ -40,7 +40,7 @@
             </div>
             <div class="guide-channel-shows">
                 {% for video in channel.content %}
-                <div class="guide-show-block video-item" data-video-src="{{ video.src }}" data-video-title="{{ video.title }}">
+                <div class="guide-show-block video-item" data-video-src="{{ video.src }}" data-video-title="{{ video.title }}" data-video-description="{{ video.description }}">
                     <div class="guide-show-title">{{ video.title }}</div>
                     <img src="{{ video.thumbnail }}" alt="{{ video.title }}">
                 </div>
@@ -234,15 +234,35 @@ document.addEventListener('DOMContentLoaded', function() {
     const mainVideo = document.getElementById('main-video');
     const currentTitle = document.getElementById('current-title');
     const currentDescription = document.getElementById('current-description');
+    const player = document.getElementById('music-player');
+    const nowPlayingWidget = document.getElementById('now-playing-widget');
 
     // Handle video selection
     document.querySelectorAll('.video-item').forEach(item => {
         item.addEventListener('click', function() {
             const videoSrc = this.dataset.videoSrc;
             const videoTitle = this.dataset.videoTitle;
+            const videoDescription = this.dataset.videoDescription || '';
+            
+            // Update main video
             mainVideo.src = videoSrc;
             currentTitle.textContent = videoTitle;
+            currentDescription.textContent = videoDescription;
             mainVideo.play();
+            
+            // Update now playing widget
+            const albumArt = nowPlayingWidget.querySelector('.album-art img');
+            const title = nowPlayingWidget.querySelector('.song-info .title');
+            const artist = nowPlayingWidget.querySelector('.song-info .artist');
+            
+            albumArt.src = this.querySelector('img').src;
+            title.textContent = videoTitle;
+            artist.textContent = 'Video';
+            
+            // Show player
+            player.classList.remove('minimized');
+            
+            // Highlight active item
             document.querySelectorAll('.video-item').forEach(v => v.classList.remove('active'));
             this.classList.add('active');
         });

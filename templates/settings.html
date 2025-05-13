@@ -2,6 +2,31 @@
 {% block content %}
 <div class="settings-page">
   <h1>Settings</h1>
-  <button class="clear-cache-btn" onclick="localStorage.clear(); sessionStorage.clear(); location.reload();">Clear Cache & Reload</button>
+  
+  <div class="settings-section">
+    <h2>Theme Settings</h2>
+    <div class="theme-options">
+      <button class="theme-btn" data-theme="default" title="Default Theme">
+        <span class="theme-preview default-theme"></span>
+        <span class="theme-name">Default</span>
+      </button>
+      <button class="theme-btn" data-theme="baby-blue" title="Baby Blue Theme">
+        <span class="theme-preview baby-blue-theme"></span>
+        <span class="theme-name">Baby Blue</span>
+      </button>
+      <button class="theme-btn" data-theme="vanilla-dust" title="Vanilla Dust Theme">
+        <span class="theme-preview vanilla-dust-theme"></span>
+        <span class="theme-name">Vanilla Dust</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="settings-section">
+    <h2>Cache Settings</h2>
+    <button class="clear-cache-btn" onclick="localStorage.clear(); sessionStorage.clear(); location.reload();">
+      <i class="fas fa-trash-alt"></i>
+      Clear Cache & Reload
+    </button>
+  </div>
 </div>
 {% endblock %} 

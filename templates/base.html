@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="default">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,9 +13,9 @@
 
     <body>
         <div class="user-badge-container">
-          <a href="/account" class="user-badge">
+          <a href="{{ url_for('settings') }}" class="user-badge">
             {{ session.get('user_id', 'guest') }}
-            <span class="settings-cog" title="Account"><i class="fas fa-cog"></i></span>
+            <i class="fas fa-cog settings-cog" title="Settings"></i>
           </a>
         </div>
         <!-- A simple sidebar -->
@@ -67,7 +67,14 @@
             {% block content %}{% endblock %}
         </div>
 
-        <div class="music-player">
+        <!-- Music Player Widget -->
+        <div class="music-player" id="music-player">
+            <div class="resize-handle" title="Resize player">
+                <i class="fas fa-expand-alt"></i>
+            </div>
+            <div class="minimize-btn" title="Minimize player">
+                <i class="fas fa-minus"></i>
+            </div>
             <div id="now-playing-widget">
                 <div class="album-art">
                     <img src alt="Album Art" id="current-album-art">
@@ -95,6 +102,13 @@
                     </div>
                 </div>
             </div>
+        </div>
+
+        <!-- Theme Switcher -->
+        <div class="theme-switcher">
+            <button class="theme-btn" data-theme="default" title="Default Theme"></button>
+            <button class="theme-btn" data-theme="baby-blue" title="Baby Blue Theme"></button>
+            <button class="theme-btn" data-theme="vanilla-dust" title="Vanilla Dust Theme"></button>
         </div>
 
         <script>
@@ -138,6 +152,70 @@
                     sidebar.classList.remove('collapsed');
                     mainContent.classList.remove('sidebar-collapsed');
                 }
+            });
+        });
+
+        // Add player resize and minimize functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const player = document.getElementById('music-player');
+            const minimizeBtn = player.querySelector('.minimize-btn');
+            const resizeHandle = player.querySelector('.resize-handle');
+            
+            // Minimize functionality
+            minimizeBtn.addEventListener('click', function() {
+                player.classList.toggle('minimized');
+                const icon = this.querySelector('i');
+                icon.classList.toggle('fa-minus');
+                icon.classList.toggle('fa-plus');
+            });
+            
+            // Save player size and state
+            function savePlayerState() {
+                const state = {
+                    minimized: player.classList.contains('minimized'),
+                    width: player.style.width,
+                    height: player.style.height
+                };
+                localStorage.setItem('playerState', JSON.stringify(state));
+            }
+            
+            // Load player state
+            function loadPlayerState() {
+                const state = JSON.parse(localStorage.getItem('playerState'));
+                if (state) {
+                    if (state.minimized) {
+                        player.classList.add('minimized');
+                        minimizeBtn.querySelector('i').classList.replace('fa-minus', 'fa-plus');
+                    }
+                    if (state.width) player.style.width = state.width;
+                    if (state.height) player.style.height = state.height;
+                }
+            }
+            
+            // Save state on resize
+            let resizeTimeout;
+            player.addEventListener('resize', function() {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(savePlayerState, 500);
+            });
+            
+            // Load saved state
+            loadPlayerState();
+        });
+
+        // Theme handling
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load saved theme
+            const savedTheme = localStorage.getItem('theme') || 'default';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            
+            // Theme switcher functionality
+            document.querySelectorAll('.theme-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const theme = this.dataset.theme;
+                    document.documentElement.setAttribute('data-theme', theme);
+                    localStorage.setItem('theme', theme);
+                });
             });
         });
         </script>
