@@ -78,6 +78,42 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    // Play button functionality
+    const playButtons = document.querySelectorAll('.play-btn');
+    playButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const podcastUrl = this.dataset.podcastUrl;
+            const podcastCard = this.closest('.podcast-card');
+            const podcastTitle = podcastCard.querySelector('h3').textContent;
+            const podcastHost = podcastCard.querySelector('.podcast-meta span:first-child').textContent.replace('👤 ', '');
+            const podcastImage = podcastCard.querySelector('.podcast-image img').src;
+
+            // Update now playing widget
+            const sidebarTitle = document.getElementById('sidebar-song-title');
+            const sidebarArtist = document.getElementById('sidebar-artist');
+            const sidebarArt = document.getElementById('sidebar-album-art');
+            
+            if (sidebarTitle) sidebarTitle.textContent = podcastTitle;
+            if (sidebarArtist) sidebarArtist.textContent = podcastHost;
+            if (sidebarArt) sidebarArt.src = podcastImage;
+
+            // Sync with server
+            fetch('/api/now-playing', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    type: 'podcast',
+                    title: podcastTitle,
+                    artist: podcastHost,
+                    albumArt: podcastImage,
+                    url: podcastUrl
+                })
+            }).catch(error => console.error('Error updating now playing:', error));
+        });
+    });
+
     // Bookmark functionality
     const bookmarkButtons = document.querySelectorAll('.bookmark-btn');
     bookmarkButtons.forEach(button => {
@@ -99,6 +135,25 @@ document.addEventListener('DOMContentLoaded', function() {
             .catch(error => console.error('Error:', error));
         });
     });
+
+    // Initialize now playing from server
+    fetch('/api/now-playing')
+        .then(response => response.json())
+        .then(data => {
+            if (data.now_playing && data.now_playing.type === 'podcast') {
+                const podcastCard = document.querySelector(`[data-podcast-url="${data.now_playing.url}"]`);
+                if (podcastCard) {
+                    const sidebarTitle = document.getElementById('sidebar-song-title');
+                    const sidebarArtist = document.getElementById('sidebar-artist');
+                    const sidebarArt = document.getElementById('sidebar-album-art');
+                    
+                    if (sidebarTitle) sidebarTitle.textContent = data.now_playing.title;
+                    if (sidebarArtist) sidebarArtist.textContent = data.now_playing.artist;
+                    if (sidebarArt) sidebarArt.src = data.now_playing.albumArt;
+                }
+            }
+        })
+        .catch(error => console.error('Error loading now playing:', error));
 });
 </script>
 {% endblock %}

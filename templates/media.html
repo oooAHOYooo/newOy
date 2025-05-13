@@ -265,8 +265,36 @@ document.addEventListener('DOMContentLoaded', function() {
             // Highlight active item
             document.querySelectorAll('.video-item').forEach(v => v.classList.remove('active'));
             this.classList.add('active');
+
+            // Sync with server
+            fetch('/api/now-playing', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    type: 'video',
+                    title: videoTitle,
+                    artist: 'Video',
+                    albumArt: this.querySelector('img').src,
+                    url: videoSrc
+                })
+            }).catch(error => console.error('Error updating now playing:', error));
         });
     });
+
+    // Initialize now playing from server
+    fetch('/api/now-playing')
+        .then(response => response.json())
+        .then(data => {
+            if (data.now_playing && data.now_playing.type === 'video') {
+                const videoItem = document.querySelector(`[data-video-src="${data.now_playing.url}"]`);
+                if (videoItem) {
+                    videoItem.click();
+                }
+            }
+        })
+        .catch(error => console.error('Error loading now playing:', error));
 });
 </script>
 {% endblock %}

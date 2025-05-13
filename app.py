@@ -129,9 +129,22 @@ def news():
 
 @app.route("/media")
 def media():
-    with open(os.path.join(DATA_DIR, "tv_channels.json"), "r", encoding="utf-8") as f:
-        tv_data = json.load(f)
-    return render_template("media.html", channels=tv_data["channels"])
+    try:
+        with open(os.path.join(DATA_DIR, "tv_channels.json"), "r", encoding="utf-8") as f:
+            tv_data = json.load(f)
+        return render_template(
+            "media.html", 
+            channels=tv_data["channels"], 
+            now_playing=session.get("now_playing", {})
+        )
+    except Exception as e:
+        app.logger.error(f"Error in media route: {str(e)}")
+        return render_template(
+            "media.html", 
+            channels=[], 
+            error=str(e), 
+            now_playing={}
+        )
 
 @app.route("/music")
 def music():
@@ -148,13 +161,38 @@ def music():
                 x.get('id', 0)                 # Then by ID
             ))
             
-        return render_template('music.html', songs=songs)
+        return render_template(
+            'music.html', 
+            songs=songs, 
+            now_playing=session.get("now_playing", {})
+        )
     except Exception as e:
-        return render_template('music.html', error=str(e))
+        app.logger.error(f"Error in music route: {str(e)}")
+        return render_template(
+            'music.html', 
+            error=str(e), 
+            now_playing={}
+        )
 
 @app.route("/podcast")
 def podcast():
-    return render_template("podcast.html")
+    try:
+        # Load podcast data
+        with open(os.path.join(DATA_DIR, "podcasts.json"), "r", encoding="utf-8") as f:
+            podcast_data = json.load(f)
+        return render_template(
+            "podcast.html", 
+            podcasts=podcast_data.get("podcasts", []), 
+            now_playing=session.get("now_playing", {})
+        )
+    except Exception as e:
+        app.logger.error(f"Error in podcast route: {str(e)}")
+        return render_template(
+            "podcast.html", 
+            podcasts=[], 
+            error=str(e), 
+            now_playing={}
+        )
 
 @app.route("/about")
 def about():
@@ -505,6 +543,37 @@ def handle_theme():
         session["theme"] = theme
         return jsonify({"success": True, "theme": theme})
     return jsonify({"theme": session.get("theme", "default")})
+
+@app.route("/api/now-playing", methods=["GET", "POST"])
+def handle_now_playing():
+    """Handle now playing updates and retrieval"""
+    if request.method == "POST":
+        try:
+            data = request.json
+            session["now_playing"] = {
+                "type": data.get("type", "music"),  # music, video, or podcast
+                "title": data.get("title", ""),
+                "artist": data.get("artist", ""),
+                "albumArt": data.get("albumArt", ""),
+                "url": data.get("url", ""),
+                "timestamp": datetime.now().isoformat()
+            }
+            return jsonify({
+                "success": True, 
+                "now_playing": session["now_playing"]
+            })
+        except Exception as e:
+            app.logger.error(f"Error updating now playing: {str(e)}")
+            return jsonify({
+                "success": False,
+                "error": str(e)
+            }), 500
+    
+    # GET request - return current now playing state
+    return jsonify({
+        "success": True,
+        "now_playing": session.get("now_playing", {})
+    })
 
 # Initialize the app
 init_app()

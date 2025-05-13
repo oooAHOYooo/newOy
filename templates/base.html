@@ -57,42 +57,27 @@
                     <span>About</span>
                 </a>
             </div>
-        </div>
-
-        <button class="toggle-sidebar-btn" title="Toggle Sidebar">
-            <i class="fas fa-bars"></i>
-        </button>
-
-        <div class="main-content">
-            {% block content %}{% endblock %}
-        </div>
-
-        <!-- Music Player Widget -->
-        <div class="music-player" id="music-player">
-            <div class="resize-handle" title="Resize player">
-                <i class="fas fa-expand-alt"></i>
-            </div>
-            <div class="minimize-btn" title="Minimize player">
-                <i class="fas fa-minus"></i>
-            </div>
-            <div id="now-playing-widget">
-                <div class="album-art">
-                    <img src alt="Album Art" id="current-album-art">
-                </div>
-                <div class="song-info">
-                    <h3 id="current-song-title">No song playing</h3>
-                    <p id="current-artist">Select a song to play</p>
-                    <div class="controls">
-                        <button id="prev-btn" title="Previous"><i class="fas fa-step-backward"></i></button>
-                        <button id="play-pause-btn" title="Play/Pause"><i class="fas fa-play"></i></button>
-                        <button id="next-btn" title="Next"><i class="fas fa-step-forward"></i></button>
+            <div class="sidebar-now-playing glass-effect">
+                <h4>Now Playing</h4>
+                <div class="sidebar-now-playing-info">
+                    <img id="sidebar-album-art" src="/static/default.jpg" alt="Album Art" />
+                    <div>
+                        <div id="sidebar-song-title">No song playing</div>
+                        <div id="sidebar-artist">---</div>
                     </div>
                 </div>
-                <div class="volume-control">
-                    <i class="fas fa-volume-up"></i>
-                    <input type="range" id="volume-slider" min="0" max="100" value="100">
+                <div class="sidebar-controls">
+                    <button class="control-btn" onclick="playPreviousSong()" title="Previous">
+                        <i class="fas fa-step-backward"></i>
+                    </button>
+                    <button class="control-btn play-btn" onclick="togglePlayPause()" title="Play/Pause">
+                        <i class="fas fa-play"></i>
+                    </button>
+                    <button class="control-btn" onclick="playNextSong()" title="Next">
+                        <i class="fas fa-step-forward"></i>
+                    </button>
                 </div>
-                <div class="progress-container">
+                <div class="sidebar-progress">
                     <div class="progress-bar">
                         <div class="progress"></div>
                     </div>
@@ -102,6 +87,14 @@
                     </div>
                 </div>
             </div>
+        </div>
+
+        <button class="toggle-sidebar-btn" title="Toggle Sidebar">
+            <i class="fas fa-bars"></i>
+        </button>
+
+        <div class="main-content">
+            {% block content %}{% endblock %}
         </div>
 
         <!-- Theme Switcher -->

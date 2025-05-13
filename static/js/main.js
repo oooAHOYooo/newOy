@@ -66,34 +66,84 @@ function playSong(songUrl, songTitle, artist, albumArt) {
 function updateNowPlaying() {
     if (!currentSong) return;
     
-    const titleElement = document.getElementById('current-song-title');
-    const artistElement = document.getElementById('current-artist');
-    const albumArtElement = document.getElementById('current-album-art');
-    const musicPlayer = document.querySelector('.music-player');
-    const albumArt = document.querySelector('.album-art');
+    // Update sidebar now playing
+    const sidebarTitle = document.getElementById('sidebar-song-title');
+    const sidebarArtist = document.getElementById('sidebar-artist');
+    const sidebarArt = document.getElementById('sidebar-album-art');
+    const sidebarPlayBtn = document.querySelector('.sidebar-controls .play-btn i');
+    const sidebarNowPlaying = document.querySelector('.sidebar-now-playing');
     
-    if (titleElement) titleElement.textContent = currentSong.title;
-    if (artistElement) artistElement.textContent = currentSong.artist;
-    if (albumArtElement) albumArtElement.src = currentSong.albumArt;
-    
-    // Add active and playing states
-    if (musicPlayer) {
-        musicPlayer.classList.add('active', 'playing');
-        // Reset fade timer when song changes
-        resetFadeTimer();
+    if (sidebarTitle) sidebarTitle.textContent = currentSong.title;
+    if (sidebarArtist) sidebarArtist.textContent = currentSong.artist;
+    if (sidebarArt) sidebarArt.src = currentSong.albumArt;
+    if (sidebarPlayBtn) {
+        sidebarPlayBtn.className = isPlaying ? 'fas fa-pause' : 'fas fa-play';
     }
-    if (albumArt) {
-        albumArt.classList.add('glow-playing');
+    if (sidebarNowPlaying) {
+        sidebarNowPlaying.classList.add('active');
     }
+
+    // Update progress
+    updateProgress();
+
+    // Sync with server
+    fetch('/api/now-playing', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            type: 'music',
+            title: currentSong.title,
+            artist: currentSong.artist,
+            albumArt: currentSong.albumArt,
+            url: currentSong.url
+        })
+    }).catch(error => console.error('Error updating now playing:', error));
+}
+
+// Initialize now playing from server
+function initNowPlaying() {
+    fetch('/api/now-playing')
+        .then(response => response.json())
+        .then(data => {
+            if (data.now_playing && data.now_playing.title) {
+                const sidebarTitle = document.getElementById('sidebar-song-title');
+                const sidebarArtist = document.getElementById('sidebar-artist');
+                const sidebarArt = document.getElementById('sidebar-album-art');
+                const sidebarPlayBtn = document.querySelector('.sidebar-controls button i');
+                
+                if (sidebarTitle) sidebarTitle.textContent = data.now_playing.title;
+                if (sidebarArtist) sidebarArtist.textContent = data.now_playing.artist;
+                if (sidebarArt) sidebarArt.src = data.now_playing.albumArt;
+                if (sidebarPlayBtn) {
+                    sidebarPlayBtn.className = 'fas fa-play';
+                }
+
+                // If it's a music item, update the main player too
+                if (data.now_playing.type === 'music') {
+                    currentSong = {
+                        title: data.now_playing.title,
+                        artist: data.now_playing.artist,
+                        albumArt: data.now_playing.albumArt,
+                        url: data.now_playing.url
+                    };
+                    updateNowPlaying();
+                }
+            }
+        })
+        .catch(error => console.error('Error loading now playing:', error));
 }
 
 // Update progress bar
 function updateProgress() {
-    const progressBar = document.querySelector('.progress');
+    if (!audioPlayer) return;
+    
+    const progressBar = document.querySelector('.sidebar-progress .progress');
     const currentTimeElement = document.getElementById('current-time');
     const totalTimeElement = document.getElementById('total-time');
     
-    if (progressBar && audioPlayer) {
+    if (progressBar) {
         const progress = (audioPlayer.currentTime / audioPlayer.duration) * 100;
         progressBar.style.width = `${progress}%`;
     }
@@ -172,29 +222,14 @@ function handlePlayerError(error) {
 function togglePlayPause() {
     if (!audioPlayer) return;
     
-    const musicPlayer = document.querySelector('.music-player');
-    const albumArt = document.querySelector('.album-art');
-    
     if (isPlaying) {
         audioPlayer.pause();
-        if (musicPlayer) {
-            musicPlayer.classList.remove('playing');
-            // Start fade timer when paused
-            resetFadeTimer();
-        }
-        if (albumArt) albumArt.classList.remove('glow-playing');
     } else {
         audioPlayer.play();
-        if (musicPlayer) {
-            musicPlayer.classList.add('playing');
-            // Reset fade timer when playing
-            resetFadeTimer();
-        }
-        if (albumArt) albumArt.classList.add('glow-playing');
     }
     
     isPlaying = !isPlaying;
-    updatePlayPauseButton();
+    updateNowPlaying();
 }
 
 // Update play/pause button
@@ -335,4 +370,33 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
+    
+    // Initialize now playing from server
+    initNowPlaying();
+    
+    // Add click handler for sidebar play button
+    const sidebarPlayBtn = document.querySelector('.sidebar-controls button');
+    if (sidebarPlayBtn) {
+        sidebarPlayBtn.addEventListener('click', togglePlayPause);
+    }
+    
+    // Add click handler for progress bar
+    const progressBar = document.querySelector('.sidebar-progress .progress-bar');
+    if (progressBar) {
+        progressBar.addEventListener('click', function(e) {
+            if (!audioPlayer) return;
+            
+            const rect = this.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const percentage = x / rect.width;
+            
+            audioPlayer.currentTime = percentage * audioPlayer.duration;
+            updateProgress();
+        });
+    }
+    
+    // Add timeupdate event listener for progress updates
+    if (audioPlayer) {
+        audioPlayer.addEventListener('timeupdate', updateProgress);
+    }
 }); 
