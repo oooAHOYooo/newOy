@@ -36,6 +36,7 @@
                     <th class="album-col">Album</th>
                     <th class="duration-col">Duration</th>
                     <th class="like-col"></th>
+                    <th class="queue-col"></th>
                 </tr>
             </thead>
             <tbody>
@@ -66,8 +67,13 @@
                     <td class="album-col">{{ bookmark.album }}</td>
                     <td class="duration-col">{{ bookmark.duration|default('3:45') }}</td>
                     <td class="like-col">
-                        <button class="like-btn active" data-song-id="{{ bookmark.item_id }}">
+                        <button class="like-btn active" data-song-id="{{ bookmark.item_id }}" data-tooltip="Remove from Favorites">
                             <i class="fas fa-heart"></i>
+                        </button>
+                    </td>
+                    <td class="queue-col">
+                        <button class="queue-btn" data-song-id="{{ bookmark.item_id }}" data-tooltip="Add to Playlist">
+                            <i class="fas fa-plus"></i>
                         </button>
                     </td>
                 </tr>
@@ -93,8 +99,11 @@
                         data-album-art="{{ bookmark.coverArt }}">
                     <i class="fas fa-play"></i>
                 </button>
-                <button class="like-btn active" data-song-id="{{ bookmark.item_id }}">
+                <button class="like-btn active" data-song-id="{{ bookmark.item_id }}" data-tooltip="Remove from Favorites">
                     <i class="fas fa-heart"></i>
+                </button>
+                <button class="queue-btn" data-song-id="{{ bookmark.item_id }}" data-tooltip="Add to Playlist">
+                    <i class="fas fa-plus"></i>
                 </button>
             </div>
         </div>
@@ -121,8 +130,11 @@
                 <p>{{ bookmark.artist }}</p>
             </div>
             <div class="song-actions">
-                <button class="like-btn active" data-song-id="{{ bookmark.item_id }}">
+                <button class="like-btn active" data-song-id="{{ bookmark.item_id }}" data-tooltip="Remove from Favorites">
                     <i class="fas fa-heart"></i>
+                </button>
+                <button class="queue-btn" data-song-id="{{ bookmark.item_id }}" data-tooltip="Add to Playlist">
+                    <i class="fas fa-plus"></i>
                 </button>
                 {% if bookmark.artistUrl %}
                 <a href="{{ bookmark.artistUrl }}" class="artist-link" target="_blank">
@@ -250,6 +262,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     icon.classList.toggle('far');
                     icon.classList.toggle('fas');
                     
+                    // Update tooltip
+                    const tooltip = this.getAttribute('data-tooltip');
+                    this.setAttribute('data-tooltip', 
+                        tooltip === 'Add to Favorites' ? 'Remove from Favorites' : 'Add to Favorites');
+                    
                     // Remove the song from the view if unliked
                     if (!this.classList.contains('active')) {
                         const songElement = this.closest('.song-row, .list-item, .song-card');
@@ -257,6 +274,38 @@ document.addEventListener('DOMContentLoaded', function() {
                             songElement.remove();
                         }
                     }
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    });
+
+    // Queue/Playlist button functionality
+    const queueButtons = document.querySelectorAll('.queue-btn');
+    queueButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const songId = this.dataset.songId;
+            fetch('/playlist/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `song_id=${songId}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Visual feedback
+                    this.classList.add('added');
+                    setTimeout(() => this.classList.remove('added'), 1000);
+                    
+                    // Update tooltip
+                    const tooltip = this.getAttribute('data-tooltip');
+                    this.setAttribute('data-tooltip', 'Added to Playlist');
+                    setTimeout(() => {
+                        this.setAttribute('data-tooltip', tooltip);
+                    }, 1000);
                 }
             })
             .catch(error => console.error('Error:', error));

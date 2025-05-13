@@ -21,47 +21,45 @@
         <!-- A simple sidebar -->
         <div class="left-dashboard">
             <div class="logo-container">
-                <img src="{{ url_for('static', filename='img/u_ahoy23.png') }}"
-                    alt="Ahoy Indie Media Logo"
-                    onclick="window.location.href='{{ url_for('news') }}'">
+                <a href="/" class="logo-text">Ahoy <span class="highlight">Indie</span> Media</a>
             </div>
             <div class="sidebar-menu">
-                <a href="{{ url_for('news') }}" class="nav-button">
+                <a href="{{ url_for('news') }}" class="nav-button" title="News">
                     <i class="fas fa-newspaper"></i>
                     <span>News</span>
                 </a>
-                <a href="{{ url_for('media') }}" class="nav-button">
+                <a href="{{ url_for('media') }}" class="nav-button" title="Media">
                     <i class="fas fa-video"></i>
                     <span>Media</span>
                 </a>
-                <a href="{{ url_for('music') }}" class="nav-button">
+                <a href="{{ url_for('music') }}" class="nav-button" title="Music">
                     <i class="fas fa-music"></i>
                     <span>Music</span>
                 </a>
-                <a href="{{ url_for('artists') }}" class="nav-button">
+                <a href="{{ url_for('artists') }}" class="nav-button" title="Artists">
                     <i class="fas fa-users"></i>
                     <span>Artists</span>
                 </a>
-                <a href="{{ url_for('podcast') }}" class="nav-button">
+                <a href="{{ url_for('podcast') }}" class="nav-button" title="Podcast">
                     <i class="fas fa-podcast"></i>
                     <span>Podcast</span>
                 </a>
-                <a href="{{ url_for('marketplace_home') }}" class="nav-button">
+                <a href="{{ url_for('marketplace_home') }}" class="nav-button" title="Shop">
                     <i class="fas fa-store"></i>
                     <span>Shop</span>
                 </a>
-                <a href="{{ url_for('my_bookmarks') }}" class="nav-button">
+                <a href="{{ url_for('my_bookmarks') }}" class="nav-button" title="My Bookmarks">
                     <i class="fas fa-bookmark"></i>
                     <span>My Bookmarks</span>
                 </a>
-                <a href="{{ url_for('about') }}" class="nav-button">
+                <a href="{{ url_for('about') }}" class="nav-button" title="About">
                     <i class="fas fa-info-circle"></i>
                     <span>About</span>
                 </a>
             </div>
         </div>
 
-        <button class="toggle-sidebar-btn">
+        <button class="toggle-sidebar-btn" title="Toggle Sidebar">
             <i class="fas fa-bars"></i>
         </button>
 
@@ -97,6 +95,51 @@
                 </div>
             </div>
         </div>
+
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.querySelector('.left-dashboard');
+            const mainContent = document.querySelector('.main-content');
+            const toggleBtn = document.querySelector('.toggle-sidebar-btn');
+            
+            // Check if we're on mobile
+            const isMobile = window.innerWidth <= 768;
+            
+            // Set initial state
+            if (isMobile) {
+                sidebar.classList.add('collapsed');
+                mainContent.classList.add('sidebar-collapsed');
+            }
+            
+            // Toggle sidebar
+            toggleBtn.addEventListener('click', function() {
+                sidebar.classList.toggle('collapsed');
+                mainContent.classList.toggle('sidebar-collapsed');
+                
+                // Update toggle button icon
+                const icon = this.querySelector('i');
+                if (sidebar.classList.contains('collapsed')) {
+                    icon.classList.remove('fa-bars');
+                    icon.classList.add('fa-chevron-right');
+                } else {
+                    icon.classList.remove('fa-chevron-right');
+                    icon.classList.add('fa-bars');
+                }
+            });
+            
+            // Handle window resize
+            window.addEventListener('resize', function() {
+                const isMobile = window.innerWidth <= 768;
+                if (isMobile) {
+                    sidebar.classList.add('collapsed');
+                    mainContent.classList.add('sidebar-collapsed');
+                } else {
+                    sidebar.classList.remove('collapsed');
+                    mainContent.classList.remove('sidebar-collapsed');
+                }
+            });
+        });
+        </script>
 
         <script src="{{ url_for('static', filename='js/main.js') }}"></script>
         {% block extra_js %}{% endblock %}
