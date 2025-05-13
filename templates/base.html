@@ -58,7 +58,12 @@
                 </a>
             </div>
             <div class="sidebar-now-playing glass-effect">
-                <h4>Now Playing</h4>
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <h4 style="margin: 0;">Now Playing</h4>
+                    <button class="control-btn like-btn" id="sidebar-like-btn" title="Like" style="margin-right: -6px; margin-top: -6px; background: none; box-shadow: none;">
+                        <i class="far fa-heart"></i>
+                    </button>
+                </div>
                 <div class="sidebar-now-playing-info">
                     <img id="sidebar-album-art" src="/static/default.jpg" alt="Album Art" />
                     <div>
@@ -67,14 +72,17 @@
                     </div>
                 </div>
                 <div class="sidebar-controls">
-                    <button class="control-btn" onclick="playPreviousSong()" title="Previous">
+                    <button class="control-btn" id="sidebar-prev-btn" onclick="playPreviousSong()" title="Previous">
                         <i class="fas fa-step-backward"></i>
                     </button>
                     <button class="control-btn play-btn" onclick="togglePlayPause()" title="Play/Pause">
-                        <i class="fas fa-play"></i>
+                        <i id="sidebar-play-icon" class="fas fa-play"></i>
                     </button>
-                    <button class="control-btn" onclick="playNextSong()" title="Next">
+                    <button class="control-btn" id="sidebar-next-btn" onclick="playNextSong()" title="Next">
                         <i class="fas fa-step-forward"></i>
+                    </button>
+                    <button class="control-btn mute-btn" id="sidebar-mute-btn" title="Mute">
+                        <i id="sidebar-mute-icon" class="fas fa-volume-mute"></i>
                     </button>
                 </div>
                 <div class="sidebar-progress">
@@ -85,6 +93,9 @@
                         <span id="current-time">0:00</span>
                         <span id="total-time">0:00</span>
                     </div>
+                </div>
+                <div class="sidebar-music-meta" style="margin-top:8px; font-size:0.82em; opacity:0.65; display:flex; flex-direction:row; gap:8px; align-items:center;">
+                    <span title="Songs Played Today"><i class="fas fa-play-circle"></i> {{ songs_played_today or 0 }} played today</span>
                 </div>
             </div>
         </div>

@@ -5,23 +5,12 @@
 {% block content %}
 <div class="music-container">
     <div class="music-header">
-        <h1>Music Player</h1>
-        
-        <!-- Quick Stats -->
-        <div class="music-stats">
-            <div class="stat-item">
-                <i class="fas fa-music"></i>
-                <span>{{ songs|length }} Songs</span>
-            </div>
-            <div class="stat-item">
-                <i class="fas fa-clock"></i>
-                <span>{{ songs|length * 3 }} Minutes</span>
-            </div>
-            <div class="stat-item">
-                <i class="fas fa-calendar"></i>
-                <span>{{ songs|length }} Tracks</span>
-            </div>
-        </div>
+        <h1 style="display: flex; align-items: baseline; gap: 10px;">
+            Music Player
+            <span class="music-played-today" style="font-size:0.68em; opacity:0.38; color:#fff; font-weight:400; margin-left:8px; display:flex; align-items:center; gap:4px;">
+                <i class="fas fa-play-circle"></i> {{ songs_played_today or 0 }} played today
+            </span>
+        </h1>
     </div>
 
     <!-- Search and Filter Bar -->
@@ -144,7 +133,17 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('.play-btn').forEach(btn => {
+    // Build playlist from table
+    const rows = document.querySelectorAll('.song-row');
+    const playlistArr = Array.from(rows).map(row => ({
+        url: row.querySelector('.play-btn').getAttribute('data-song-url'),
+        title: row.getAttribute('data-title'),
+        artist: row.getAttribute('data-artist'),
+        albumArt: row.querySelector('.play-btn').getAttribute('data-album-art')
+    }));
+    window.setPlaylist && setPlaylist(playlistArr, -1);
+
+    document.querySelectorAll('.play-btn').forEach((btn, idx) => {
         btn.addEventListener('click', function(e) {
             e.preventDefault();
             const songUrl = this.getAttribute('data-song-url');
@@ -152,6 +151,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const artist = this.getAttribute('data-artist');
             const albumArt = this.getAttribute('data-album-art');
             if (typeof playSong === 'function') {
+                setPlaylist(playlistArr, idx);
                 playSong(songUrl, songTitle, artist, albumArt);
             }
         });

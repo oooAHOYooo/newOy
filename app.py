@@ -153,25 +153,42 @@ def music():
         with open('data/temp/ogJson/radioPlay.json', 'r') as f:
             data = json.load(f)
             songs = data.get('songs', [])
-            
+
             # Sort songs by featured and new status
             songs.sort(key=lambda x: (
                 not x.get('featured', False),  # Featured songs first
                 not x.get('new', False),       # Then new songs
                 x.get('id', 0)                 # Then by ID
             ))
-            
+
+        # Calculate meta info
+        song_count = len(songs)
+        artist_count = len(set(song.get('artist') for song in songs if song.get('artist')))
+        last_updated = data.get('last_updated')
+        if not last_updated:
+            # Fallback: use file modified time
+            import os
+            ts = os.path.getmtime('data/temp/ogJson/radioPlay.json')
+            from datetime import datetime
+            last_updated = datetime.fromtimestamp(ts).strftime('%Y-%m-%d')
+
         return render_template(
             'music.html', 
             songs=songs, 
-            now_playing=session.get("now_playing", {})
+            now_playing=session.get("now_playing", {}),
+            song_count=song_count,
+            artist_count=artist_count,
+            last_updated=last_updated
         )
     except Exception as e:
         app.logger.error(f"Error in music route: {str(e)}")
         return render_template(
             'music.html', 
             error=str(e), 
-            now_playing={}
+            now_playing={},
+            song_count=0,
+            artist_count=0,
+            last_updated='N/A'
         )
 
 @app.route("/podcast")

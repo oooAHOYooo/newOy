@@ -399,4 +399,102 @@ document.addEventListener('DOMContentLoaded', function() {
     if (audioPlayer) {
         audioPlayer.addEventListener('timeupdate', updateProgress);
     }
-}); 
+
+    // --- Sidebar Like Button ---
+    const likeBtn = document.getElementById('sidebar-like-btn');
+    if (likeBtn) {
+        likeBtn.addEventListener('click', function() {
+            if (!currentSong || !currentSong.url) return;
+            fetch('/bookmark', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `item_id=${encodeURIComponent(currentSong.url)}&item_type=music`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const icon = likeBtn.querySelector('i');
+                    icon.classList.toggle('fas');
+                    icon.classList.toggle('far');
+                    likeBtn.classList.toggle('active');
+                }
+            });
+        });
+    }
+
+    // --- Sidebar Mute Button ---
+    const muteBtn = document.getElementById('sidebar-mute-btn');
+    if (muteBtn) {
+        muteBtn.addEventListener('click', function() {
+            if (!audioPlayer) return;
+            audioPlayer.muted = !audioPlayer.muted;
+            const icon = muteBtn.querySelector('i');
+            if (audioPlayer.muted) {
+                icon.classList.remove('fa-volume-mute');
+                icon.classList.add('fa-volume-off');
+            } else {
+                icon.classList.remove('fa-volume-off');
+                icon.classList.add('fa-volume-mute');
+            }
+        });
+    }
+
+    // --- Sidebar Prev/Next Buttons ---
+    const prevBtn = document.getElementById('sidebar-prev-btn');
+    const nextBtn = document.getElementById('sidebar-next-btn');
+    if (prevBtn) prevBtn.addEventListener('click', playPreviousSong);
+    if (nextBtn) nextBtn.addEventListener('click', playNextSong);
+});
+
+// --- Playlist Navigation ---
+let playlist = [];
+let playlistIndex = -1;
+
+function setPlaylist(songs, startIndex) {
+    playlist = songs;
+    playlistIndex = startIndex;
+}
+
+function playSong(songUrl, songTitle, artist, albumArt) {
+    if (!audioPlayer) {
+        initAudioPlayer();
+    }
+    currentSong = {
+        url: songUrl,
+        title: songTitle,
+        artist: artist,
+        albumArt: albumArt
+    };
+    // Update playlist index if song is in playlist
+    if (playlist.length > 0) {
+        const idx = playlist.findIndex(s => s.url === songUrl);
+        if (idx !== -1) playlistIndex = idx;
+    }
+    audioPlayer.src = songUrl;
+    audioPlayer.play()
+        .then(() => {
+            isPlaying = true;
+            updateNowPlaying();
+            updatePlayPauseButton();
+        })
+        .catch(error => {
+            console.error('Error playing song:', error);
+            handlePlayerError(error);
+        });
+}
+
+function playPreviousSong() {
+    if (playlist.length > 0 && playlistIndex > 0) {
+        playlistIndex--;
+        const song = playlist[playlistIndex];
+        playSong(song.url, song.title, song.artist, song.albumArt);
+    }
+}
+
+function playNextSong() {
+    if (playlist.length > 0 && playlistIndex < playlist.length - 1) {
+        playlistIndex++;
+        const song = playlist[playlistIndex];
+        playSong(song.url, song.title, song.artist, song.albumArt);
+    }
+} 
