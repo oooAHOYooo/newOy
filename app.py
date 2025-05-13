@@ -197,15 +197,46 @@ def discover():
 #############
 @app.route("/bookmark", methods=["POST"])
 def bookmark():
-    """Add a bookmark"""
+    """Add or remove a bookmark"""
     try:
         item_id = request.form.get('item_id')
-        item_type = request.form.get('item_type')
+        item_type = request.form.get('item_type', 'music')  # Default to music type
+        user_id = get_current_user_id()
         
-        # Here you would typically save the bookmark to a database
-        # For now, we'll just return a success response
-        return jsonify({'success': True})
+        db = get_db()
+        cursor = db.cursor()
+        
+        # Check if bookmark exists
+        existing = cursor.execute(
+            'SELECT id FROM bookmarks WHERE user_id = ? AND item_id = ? AND item_type = ?',
+            (user_id, item_id, item_type)
+        ).fetchone()
+        
+        if existing:
+            # Remove bookmark
+            cursor.execute(
+                'DELETE FROM bookmarks WHERE user_id = ? AND item_id = ? AND item_type = ?',
+                (user_id, item_id, item_type)
+            )
+            action = 'removed'
+        else:
+            # Add bookmark
+            cursor.execute(
+                'INSERT INTO bookmarks (user_id, item_id, item_type, created_at) VALUES (?, ?, ?, ?)',
+                (user_id, item_id, item_type, datetime.now())
+            )
+            action = 'added'
+            
+        db.commit()
+        db.close()
+        
+        return jsonify({
+            'success': True,
+            'action': action,
+            'message': f'Bookmark {action} successfully'
+        })
     except Exception as e:
+        app.logger.error(f"Error in bookmark route: {str(e)}")
         return jsonify({'success': False, 'error': str(e)})
 
 @app.route("/my-bookmarks")
@@ -213,10 +244,48 @@ def my_bookmarks():
     try:
         user_id = get_current_user_id()
         db = get_db()
-        bookmarks = db.execute(
-            'SELECT * FROM bookmarks WHERE user_id = ? ORDER BY created_at DESC',
-            (user_id,)
-        ).fetchall()
+        
+        # Get all bookmarks with their details
+        bookmarks = db.execute('''
+            SELECT b.*, 
+                   CASE 
+                       WHEN b.item_type = 'music' THEN m.songTitle
+                       WHEN b.item_type = 'news' THEN n.title
+                       ELSE NULL 
+                   END as title,
+                   CASE 
+                       WHEN b.item_type = 'music' THEN m.artist
+                       WHEN b.item_type = 'news' THEN n.author
+                       ELSE NULL 
+                   END as author,
+                   CASE 
+                       WHEN b.item_type = 'music' THEN m.album
+                       ELSE NULL 
+                   END as album,
+                   CASE 
+                       WHEN b.item_type = 'music' THEN m.duration
+                       ELSE NULL 
+                   END as duration,
+                   CASE 
+                       WHEN b.item_type = 'music' THEN m.coverArt
+                       WHEN b.item_type = 'news' THEN n.image
+                       ELSE NULL 
+                   END as image,
+                   CASE 
+                       WHEN b.item_type = 'music' THEN m.mp3url
+                       ELSE NULL 
+                   END as mp3url,
+                   CASE 
+                       WHEN b.item_type = 'music' THEN m.artistUrl
+                       ELSE NULL 
+                   END as artistUrl
+            FROM bookmarks b
+            LEFT JOIN music m ON b.item_type = 'music' AND b.item_id = m.id
+            LEFT JOIN news n ON b.item_type = 'news' AND b.item_id = n.id
+            WHERE b.user_id = ?
+            ORDER BY b.created_at DESC
+        ''', (user_id,)).fetchall()
+        
         db.close()
         return render_template("bookmarks.html", bookmarks=bookmarks)
     except Exception as e:

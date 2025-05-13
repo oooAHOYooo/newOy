@@ -24,35 +24,35 @@
                 <a href="/" class="logo-text">Ahoy <span class="highlight">Indie</span> Media</a>
             </div>
             <div class="sidebar-menu">
-                <a href="{{ url_for('news') }}" class="nav-button" title="News">
+                <a href="{{ url_for('news') }}" class="nav-button {% if request.endpoint == 'news' %}active{% endif %}" title="News">
                     <i class="fas fa-newspaper"></i>
                     <span>News</span>
                 </a>
-                <a href="{{ url_for('media') }}" class="nav-button" title="Media">
+                <a href="{{ url_for('media') }}" class="nav-button {% if request.endpoint == 'media' %}active{% endif %}" title="Media">
                     <i class="fas fa-video"></i>
                     <span>Media</span>
                 </a>
-                <a href="{{ url_for('music') }}" class="nav-button" title="Music">
+                <a href="{{ url_for('music') }}" class="nav-button {% if request.endpoint == 'music' %}active{% endif %}" title="Music">
                     <i class="fas fa-music"></i>
                     <span>Music</span>
                 </a>
-                <a href="{{ url_for('artists') }}" class="nav-button" title="Artists">
+                <a href="{{ url_for('artists') }}" class="nav-button {% if request.endpoint == 'artists' %}active{% endif %}" title="Artists">
                     <i class="fas fa-users"></i>
                     <span>Artists</span>
                 </a>
-                <a href="{{ url_for('podcast') }}" class="nav-button" title="Podcast">
+                <a href="{{ url_for('podcast') }}" class="nav-button {% if request.endpoint == 'podcast' %}active{% endif %}" title="Podcast">
                     <i class="fas fa-podcast"></i>
                     <span>Podcast</span>
                 </a>
-                <a href="{{ url_for('marketplace_home') }}" class="nav-button" title="Shop">
+                <a href="{{ url_for('marketplace_home') }}" class="nav-button {% if request.endpoint == 'marketplace_home' %}active{% endif %}" title="Shop">
                     <i class="fas fa-store"></i>
                     <span>Shop</span>
                 </a>
-                <a href="{{ url_for('my_bookmarks') }}" class="nav-button" title="My Bookmarks">
+                <a href="{{ url_for('my_bookmarks') }}" class="nav-button {% if request.endpoint == 'my_bookmarks' %}active{% endif %}" title="My Bookmarks">
                     <i class="fas fa-bookmark"></i>
                     <span>My Bookmarks</span>
                 </a>
-                <a href="{{ url_for('about') }}" class="nav-button" title="About">
+                <a href="{{ url_for('about') }}" class="nav-button {% if request.endpoint == 'about' %}active{% endif %}" title="About">
                     <i class="fas fa-info-circle"></i>
                     <span>About</span>
                 </a>
@@ -75,14 +75,15 @@
                 <div class="song-info">
                     <h3 id="current-song-title">No song playing</h3>
                     <p id="current-artist">Select a song to play</p>
+                    <div class="controls">
+                        <button id="prev-btn" title="Previous"><i class="fas fa-step-backward"></i></button>
+                        <button id="play-pause-btn" title="Play/Pause"><i class="fas fa-play"></i></button>
+                        <button id="next-btn" title="Next"><i class="fas fa-step-forward"></i></button>
+                    </div>
                 </div>
-                <div class="controls">
-                    <button id="prev-btn"><i
-                            class="fas fa-step-backward"></i></button>
-                    <button id="play-pause-btn"><i
-                            class="fas fa-play"></i></button>
-                    <button id="next-btn"><i
-                            class="fas fa-step-forward"></i></button>
+                <div class="volume-control">
+                    <i class="fas fa-volume-up"></i>
+                    <input type="range" id="volume-slider" min="0" max="100" value="100">
                 </div>
                 <div class="progress-container">
                     <div class="progress-bar">

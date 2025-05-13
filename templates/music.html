@@ -144,6 +144,120 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Audio player setup
+    const audioPlayer = new Audio();
+    let currentSong = null;
+    
+    // Player elements
+    const playPauseBtn = document.getElementById('play-pause-btn');
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+    const currentSongTitle = document.getElementById('current-song-title');
+    const currentArtist = document.getElementById('current-artist');
+    const currentAlbumArt = document.getElementById('current-album-art');
+    const progressBar = document.querySelector('.progress');
+    const currentTimeSpan = document.getElementById('current-time');
+    const totalTimeSpan = document.getElementById('total-time');
+    const musicPlayer = document.querySelector('.music-player');
+    
+    // Play song function
+    function playSong(songUrl, songTitle, artist, albumArt) {
+        // Update player info
+        currentSongTitle.textContent = songTitle;
+        currentArtist.textContent = artist;
+        currentAlbumArt.src = albumArt;
+        currentAlbumArt.alt = songTitle;
+        
+        // Update audio source
+        audioPlayer.src = songUrl;
+        audioPlayer.play();
+        
+        // Update player state
+        musicPlayer.classList.add('active');
+        playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
+        
+        // Update current song
+        currentSong = {
+            url: songUrl,
+            title: songTitle,
+            artist: artist,
+            albumArt: albumArt
+        };
+    }
+    
+    // Toggle play/pause
+    function togglePlayPause() {
+        if (audioPlayer.paused) {
+            audioPlayer.play();
+            playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
+            musicPlayer.classList.add('active');
+        } else {
+            audioPlayer.pause();
+            playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+            musicPlayer.classList.remove('active');
+        }
+    }
+    
+    // Update progress bar
+    function updateProgress() {
+        const progress = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+        progressBar.style.width = `${progress}%`;
+        
+        // Update time displays
+        currentTimeSpan.textContent = formatTime(audioPlayer.currentTime);
+        totalTimeSpan.textContent = formatTime(audioPlayer.duration);
+    }
+    
+    // Format time (seconds to MM:SS)
+    function formatTime(seconds) {
+        if (isNaN(seconds)) return '0:00';
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = Math.floor(seconds % 60);
+        return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+    }
+    
+    // Event listeners for player controls
+    playPauseBtn.addEventListener('click', togglePlayPause);
+    
+    audioPlayer.addEventListener('timeupdate', updateProgress);
+    
+    audioPlayer.addEventListener('ended', () => {
+        playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+        musicPlayer.classList.remove('active');
+    });
+    
+    // Progress bar click handling
+    document.querySelector('.progress-bar').addEventListener('click', (e) => {
+        const rect = e.target.getBoundingClientRect();
+        const pos = (e.clientX - rect.left) / rect.width;
+        audioPlayer.currentTime = pos * audioPlayer.duration;
+    });
+    
+    // Play button functionality
+    const playButtons = document.querySelectorAll('.play-btn');
+    playButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const songUrl = this.dataset.songUrl;
+            const songTitle = this.dataset.songTitle;
+            const artist = this.dataset.artist;
+            const albumArt = this.dataset.albumArt;
+            
+            // Update all play buttons
+            playButtons.forEach(btn => {
+                btn.innerHTML = '<i class="fas fa-play"></i>';
+                btn.closest('.song-row').classList.remove('playing');
+            });
+            
+            // Update clicked button and row
+            this.innerHTML = '<i class="fas fa-pause"></i>';
+            this.closest('.song-row').classList.add('playing');
+            
+            // Play the song
+            playSong(songUrl, songTitle, artist, albumArt);
+        });
+    });
+
     // State management
     const state = {
         searchTerm: '',
@@ -300,29 +414,6 @@ document.addEventListener('DOMContentLoaded', function() {
             if (e.target.closest('button')) return;
             const playBtn = this.querySelector('.play-btn');
             if (playBtn) playBtn.click();
-        });
-    });
-
-    // Play button functionality
-    const playButtons = document.querySelectorAll('.play-btn');
-    playButtons.forEach(button => {
-        button.addEventListener('click', function(e) {
-            e.stopPropagation();
-            const songUrl = this.dataset.songUrl;
-            const songTitle = this.dataset.songTitle;
-            const artist = this.dataset.artist;
-            const albumArt = this.dataset.albumArt;
-            
-            playSong(songUrl, songTitle, artist, albumArt);
-            
-            playButtons.forEach(btn => {
-                btn.innerHTML = '<i class="fas fa-play"></i>';
-            });
-            this.innerHTML = '<i class="fas fa-pause"></i>';
-            
-            // Update playing state
-            songRows.forEach(row => row.classList.remove('playing'));
-            this.closest('.song-row').classList.add('playing');
         });
     });
 
