@@ -142,16 +142,42 @@ function skip(seconds) {
     audioPlayer.currentTime += seconds;
 }
 
-// Sidebar functionality
+// Enhanced Sidebar functionality
 function toggleSidebar() {
     const sidebar = document.querySelector('.left-dashboard');
     const mainContent = document.querySelector('.main-content');
     const toggleBtn = document.querySelector('.toggle-sidebar-btn');
     
     if (sidebar && mainContent && toggleBtn) {
-        sidebar.classList.toggle('collapsed');
+        const isOpen = sidebar.classList.toggle('active');
         mainContent.classList.toggle('expanded');
         toggleBtn.classList.toggle('active');
+        
+        // Save state to localStorage
+        localStorage.setItem('sidebarOpen', isOpen);
+        
+        // Add/remove body class for overlay
+        document.body.classList.toggle('sidebar-open', isOpen);
+    }
+}
+
+// Close sidebar when clicking outside
+function handleOutsideClick(e) {
+    const sidebar = document.querySelector('.left-dashboard');
+    const toggleBtn = document.querySelector('.toggle-sidebar-btn');
+    
+    if (sidebar && sidebar.classList.contains('active') && 
+        !sidebar.contains(e.target) && 
+        !toggleBtn.contains(e.target)) {
+        toggleSidebar();
+    }
+}
+
+// Close sidebar when clicking a nav link
+function handleNavClick() {
+    const sidebar = document.querySelector('.left-dashboard');
+    if (sidebar && sidebar.classList.contains('active')) {
+        toggleSidebar();
     }
 }
 
@@ -164,6 +190,52 @@ document.addEventListener('DOMContentLoaded', function() {
     const toggleBtn = document.querySelector('.toggle-sidebar-btn');
     if (toggleBtn) {
         toggleBtn.addEventListener('click', toggleSidebar);
+    }
+    
+    // Close sidebar when clicking outside
+    document.addEventListener('click', handleOutsideClick);
+    
+    // Close sidebar when clicking nav links
+    const navLinks = document.querySelectorAll('.nav-button');
+    navLinks.forEach(link => {
+        link.addEventListener('click', handleNavClick);
+    });
+    
+    // Restore sidebar state from localStorage
+    const sidebar = document.querySelector('.left-dashboard');
+    if (sidebar && localStorage.getItem('sidebarOpen') === 'true') {
+        toggleSidebar();
+    }
+    
+    // Add touch support for mobile
+    let touchStartX = 0;
+    let touchEndX = 0;
+    
+    document.addEventListener('touchstart', e => {
+        touchStartX = e.changedTouches[0].screenX;
+    }, false);
+    
+    document.addEventListener('touchend', e => {
+        touchEndX = e.changedTouches[0].screenX;
+        handleSwipe();
+    }, false);
+    
+    function handleSwipe() {
+        const sidebar = document.querySelector('.left-dashboard');
+        if (!sidebar) return;
+        
+        const swipeThreshold = 100;
+        const swipeDistance = touchEndX - touchStartX;
+        
+        if (Math.abs(swipeDistance) > swipeThreshold) {
+            if (swipeDistance > 0 && !sidebar.classList.contains('active')) {
+                // Swipe right - open sidebar
+                toggleSidebar();
+            } else if (swipeDistance < 0 && sidebar.classList.contains('active')) {
+                // Swipe left - close sidebar
+                toggleSidebar();
+            }
+        }
     }
     
     // Play/Pause button
@@ -198,6 +270,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 break;
             case 'ArrowRight':
                 skip(15);
+                break;
+            case 'Escape':
+                // Close sidebar with Escape key
+                const sidebar = document.querySelector('.left-dashboard');
+                if (sidebar && sidebar.classList.contains('active')) {
+                    toggleSidebar();
+                }
                 break;
         }
     });

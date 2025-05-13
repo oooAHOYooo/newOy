@@ -253,6 +253,9 @@ body {
 @media (max-width: 768px) {
     .left-dashboard {
         transform: translateX(-100%);
+        transition: transform var(--transition-speed) ease;
+        position: fixed;
+        z-index: 1000;
     }
 
     .left-dashboard.active {
@@ -261,14 +264,74 @@ body {
 
     .toggle-sidebar-btn {
         display: block;
+        position: fixed;
+        left: 20px;
+        top: 20px;
+        z-index: 1001;
+        background: var(--glass-bg);
+        color: var(--secondary-color);
+        border: 1px solid var(--glass-border);
+        padding: 10px;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .toggle-sidebar-btn:hover {
+        background: var(--accent-color);
+        color: white;
+        transform: scale(1.1);
+    }
+
+    .toggle-sidebar-btn.active {
+        background: var(--accent-color);
+        color: white;
     }
 
     .main-content {
         margin-left: 0;
+        transition: margin-left var(--transition-speed) ease;
     }
 
+    .main-content.expanded {
+        margin-left: var(--sidebar-width);
+    }
+
+    /* Overlay when sidebar is open */
+    body.sidebar-open::after {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+        backdrop-filter: blur(2px);
+    }
+
+    /* Prevent body scroll when sidebar is open */
+    body.sidebar-open {
+        overflow: hidden;
+    }
+
+    /* Adjust music player for mobile */
     .music-player {
         left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 998;
+    }
+}
+
+/* Touch-friendly styles */
+@media (hover: none) {
+    .nav-button {
+        padding: 15px 20px; /* Larger touch targets */
+    }
+
+    .toggle-sidebar-btn {
+        padding: 15px; /* Larger touch target */
     }
 }
 
