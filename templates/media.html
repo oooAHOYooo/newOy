@@ -97,11 +97,11 @@
 .guide-header-row {
     display: flex;
     align-items: center;
-    background: #181818;
-    color: #bbb;
+    background: var(--primary-color);
+    color: var(--text-color);
     font-size: 1em;
     padding: 10px 0 10px 180px;
-    border-bottom: 1px solid #333;
+    border-bottom: 1px solid var(--accent-color);
 }
 
 .guide-time-label {
@@ -118,13 +118,13 @@
     min-width: 120px;
     text-align: center;
     font-size: 0.95em;
-    color: #bbb;
+    color: var(--secondary-color);
 }
 
 .guide-row {
     display: flex;
     align-items: stretch;
-    border-bottom: 1px solid #333;
+    border-bottom: 1px solid var(--accent-color);
     min-height: 100px;
 }
 
@@ -133,7 +133,7 @@
     align-items: center;
     gap: 12px;
     width: 180px;
-    background: #181818;
+    background: var(--dark-bg);
     padding: 10px 10px 10px 20px;
 }
 
@@ -142,7 +142,7 @@
     height: 56px;
     object-fit: cover;
     border-radius: 6px;
-    background: #333;
+    background: var(--primary-color);
 }
 
 .guide-channel-meta {
@@ -153,12 +153,12 @@
 
 .guide-channel-name {
     font-weight: bold;
-    color: #fff;
+    color: var(--text-color);
     font-size: 1.05em;
 }
 
 .guide-channel-show {
-    color: #bbb;
+    color: var(--secondary-color);
     font-size: 0.95em;
     margin-top: 2px;
 }
@@ -173,12 +173,12 @@
 }
 
 .guide-show-block {
-    background: #333;
+    background: var(--dark-bg);
     border-radius: 6px;
     min-width: 180px;
     max-width: 220px;
     padding: 10px;
-    color: #fff;
+    color: var(--text-color);
     cursor: pointer;
     transition: background 0.2s, transform 0.2s;
     display: flex;
@@ -188,7 +188,7 @@
 }
 
 .guide-show-block:hover {
-    background: #444;
+    background: var(--accent-color);
     transform: scale(1.04);
 }
 
@@ -197,7 +197,7 @@
     font-weight: 500;
     margin-bottom: 8px;
     text-align: center;
-    color: #fff;
+    color: var(--text-color);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
