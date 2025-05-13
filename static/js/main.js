@@ -2,9 +2,12 @@
 let audioPlayer = null;
 let currentSong = null;
 let isPlaying = false;
+let isInitialized = false;
 
 // Initialize audio player
 function initAudioPlayer() {
+    if (isInitialized) return;
+    
     audioPlayer = new Audio();
     
     // Event listeners for audio player
@@ -17,6 +20,20 @@ function initAudioPlayer() {
     if (progressBar) {
         progressBar.addEventListener('click', seek);
     }
+    
+    // Initialize play/pause button
+    const playPauseBtn = document.getElementById('play-pause-btn');
+    if (playPauseBtn) {
+        playPauseBtn.addEventListener('click', togglePlayPause);
+    }
+    
+    // Initialize skip buttons
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+    if (prevBtn) prevBtn.addEventListener('click', playPreviousSong);
+    if (nextBtn) nextBtn.addEventListener('click', playNextSong);
+    
+    isInitialized = true;
 }
 
 // Play song function
@@ -90,8 +107,9 @@ function updateProgress() {
     }
 }
 
-// Format time (mm:ss)
+// Format time in MM:SS
 function formatTime(seconds) {
+    if (isNaN(seconds)) return '0:00';
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = Math.floor(seconds % 60);
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
@@ -109,10 +127,16 @@ function seek(e) {
     }
 }
 
+// Play previous song
+function playPreviousSong() {
+    // Implement playlist functionality here
+    console.log('Play previous song - implement playlist functionality');
+}
+
 // Play next song
 function playNextSong() {
     // Implement playlist functionality here
-    console.log('Song ended, implement playlist functionality');
+    console.log('Play next song - implement playlist functionality');
     
     // Remove active states when song ends
     const musicPlayer = document.querySelector('.music-player');
@@ -177,15 +201,10 @@ function togglePlayPause() {
 function updatePlayPauseButton() {
     const playPauseBtn = document.getElementById('play-pause-btn');
     if (playPauseBtn) {
-        playPauseBtn.innerHTML = isPlaying ? '<i class="fas fa-pause"></i>' : '<i class="fas fa-play"></i>';
+        playPauseBtn.innerHTML = isPlaying ? 
+            '<i class="fas fa-pause"></i>' : 
+            '<i class="fas fa-play"></i>';
     }
-}
-
-// Skip forward/backward
-function skip(seconds) {
-    if (!audioPlayer) return;
-    
-    audioPlayer.currentTime += seconds;
 }
 
 // Enhanced Sidebar functionality
@@ -285,81 +304,35 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Restore sidebar state from localStorage
     const sidebar = document.querySelector('.left-dashboard');
-    if (sidebar && localStorage.getItem('sidebarOpen') === 'true') {
-        toggleSidebar();
-    }
-    
-    // Add touch support for mobile
-    let touchStartX = 0;
-    let touchEndX = 0;
-    
-    document.addEventListener('touchstart', e => {
-        touchStartX = e.changedTouches[0].screenX;
-    }, false);
-    
-    document.addEventListener('touchend', e => {
-        touchEndX = e.changedTouches[0].screenX;
-        handleSwipe();
-    }, false);
-    
-    function handleSwipe() {
-        const sidebar = document.querySelector('.left-dashboard');
-        if (!sidebar) return;
-        
-        const swipeThreshold = 100;
-        const swipeDistance = touchEndX - touchStartX;
-        
-        if (Math.abs(swipeDistance) > swipeThreshold) {
-            if (swipeDistance > 0 && !sidebar.classList.contains('active')) {
-                // Swipe right - open sidebar
-                toggleSidebar();
-            } else if (swipeDistance < 0 && sidebar.classList.contains('active')) {
-                // Swipe left - close sidebar
-                toggleSidebar();
-            }
+    if (sidebar) {
+        const isSidebarOpen = localStorage.getItem('sidebarOpen') === 'true';
+        if (isSidebarOpen) {
+            sidebar.classList.add('active');
+            document.body.classList.add('sidebar-open');
         }
     }
     
-    // Play/Pause button
-    const playPauseBtn = document.getElementById('play-pause-btn');
-    if (playPauseBtn) {
-        playPauseBtn.addEventListener('click', togglePlayPause);
-    }
-    
-    // Skip buttons
-    const prevBtn = document.getElementById('prev-btn');
-    const nextBtn = document.getElementById('next-btn');
-    
-    if (prevBtn) {
-        prevBtn.addEventListener('click', () => skip(-15));
-    }
-    
-    if (nextBtn) {
-        nextBtn.addEventListener('click', () => skip(15));
-    }
-    
-    // Keyboard shortcuts
+    // Add keyboard shortcuts
     document.addEventListener('keydown', function(e) {
-        switch(e.key) {
-            case ' ':
-                if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
-                    e.preventDefault();
-                    togglePlayPause();
-                }
-                break;
-            case 'ArrowLeft':
-                skip(-15);
-                break;
-            case 'ArrowRight':
-                skip(15);
-                break;
-            case 'Escape':
-                // Close sidebar with Escape key
-                const sidebar = document.querySelector('.left-dashboard');
-                if (sidebar && sidebar.classList.contains('active')) {
-                    toggleSidebar();
-                }
-                break;
+        // Space bar to play/pause
+        if (e.code === 'Space' && !e.target.matches('input, textarea')) {
+            e.preventDefault();
+            togglePlayPause();
+        }
+        // Left arrow to previous song
+        if (e.code === 'ArrowLeft' && e.altKey) {
+            playPreviousSong();
+        }
+        // Right arrow to next song
+        if (e.code === 'ArrowRight' && e.altKey) {
+            playNextSong();
+        }
+        // Escape to close sidebar
+        if (e.code === 'Escape') {
+            const sidebar = document.querySelector('.left-dashboard');
+            if (sidebar && sidebar.classList.contains('active')) {
+                toggleSidebar();
+            }
         }
     });
 }); 

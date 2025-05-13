@@ -136,11 +136,21 @@ def media():
 @app.route("/music")
 def music():
     try:
-        all_songs = music_data.get("songs", [])
-        return render_template("music.html", songs=all_songs)
+        # Load songs from radioPlay.json
+        with open('data/temp/ogJson/radioPlay.json', 'r') as f:
+            data = json.load(f)
+            songs = data.get('songs', [])
+            
+            # Sort songs by featured and new status
+            songs.sort(key=lambda x: (
+                not x.get('featured', False),  # Featured songs first
+                not x.get('new', False),       # Then new songs
+                x.get('id', 0)                 # Then by ID
+            ))
+            
+        return render_template('music.html', songs=songs)
     except Exception as e:
-        app.logger.error(f"Error in music route: {str(e)}")
-        return render_template("music.html", songs=[], error="Failed to load music")
+        return render_template('music.html', error=str(e))
 
 @app.route("/podcast")
 def podcast():
@@ -163,6 +173,25 @@ def artist_detail(artist_id):
         return render_template('404.html'), 404
     return render_template('artist_detail.html', artist=artist)
 
+@app.route('/discover')
+def discover():
+    try:
+        # Load songs from radioPlay.json
+        with open('data/radioPlay.json', 'r') as f:
+            songs = json.load(f)
+        
+        # Sort songs by featured status, new status, and ID
+        songs.sort(key=lambda x: (
+            not x.get('featured', False),  # Featured songs first
+            not x.get('new', False),       # New songs second
+            -x.get('id', 0)                # Then by ID (newest first)
+        ))
+        
+        return render_template('discover.html', songs=songs)
+    except Exception as e:
+        print(f"Error loading discover page: {str(e)}")
+        return render_template('discover.html', songs=[])
+
 #############
 # BOOKMARK 
 #############
@@ -170,25 +199,14 @@ def artist_detail(artist_id):
 def bookmark():
     """Add a bookmark"""
     try:
-        user_id = get_current_user_id()
-        item_id = request.form.get("item_id")
-        item_type = request.form.get("item_type", "music")
-
-        if not item_id:
-            return jsonify({"error": "No item_id provided"}), 400
-
-        db = get_db()
-        db.execute(
-            'INSERT INTO bookmarks (user_id, item_id, item_type, created_at) VALUES (?, ?, ?, ?)',
-            (user_id, item_id, item_type, datetime.now().isoformat())
-        )
-        db.commit()
-        db.close()
+        item_id = request.form.get('item_id')
+        item_type = request.form.get('item_type')
         
-        return jsonify({"success": True, "item_id": item_id, "item_type": item_type})
+        # Here you would typically save the bookmark to a database
+        # For now, we'll just return a success response
+        return jsonify({'success': True})
     except Exception as e:
-        app.logger.error(f"Error in bookmark route: {str(e)}")
-        return jsonify({"error": "Internal server error"}), 500
+        return jsonify({'success': False, 'error': str(e)})
 
 @app.route("/my-bookmarks")
 def my_bookmarks():

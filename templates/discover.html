@@ -1,24 +1,16 @@
 {% extends "base.html" %}
 
-{% block title %}Music - Ahoy Indie Media{% endblock %}
+{% block title %}Discover Music - Ahoy Indie Media{% endblock %}
 
 {% block content %}
-<div class="music-container">
-    <h1>Music Player</h1>
-
-    {% if error %}
-    <div class="error-message">
-        {{ error }}
-    </div>
-    {% endif %}
-
-    <div class="search-container">
-        <input type="text" id="search-input" placeholder="Search songs...">
-        <div class="filter-buttons">
-            <button class="filter-btn active" data-filter="all">All</button>
-            <button class="filter-btn" data-filter="featured">Featured</button>
-            <button class="filter-btn" data-filter="new">New</button>
-        </div>
+<div class="discover-container">
+    <!-- Hero Section -->
+    <div class="discover-hero">
+        <h1>Discover New Music</h1>
+        <p class="subheadline">Explore fresh tracks from independent artists</p>
+        <button class="surprise-btn" id="surprise-me">
+            <i class="fas fa-dice"></i> Surprise Me
+        </button>
     </div>
 
     <!-- View Toggle -->
@@ -28,9 +20,6 @@
         </button>
         <button data-view="list">
             <i class="fas fa-align-left"></i> List
-        </button>
-        <button data-view="grid">
-            <i class="fas fa-th-large"></i> Grid
         </button>
     </div>
 
@@ -125,94 +114,12 @@
         </div>
         {% endfor %}
     </div>
-
-    <!-- Grid View -->
-    <div class="songs-grid view-mode">
-        {% for song in songs %}
-        <div class="song-card" data-song-id="{{ song.id }}" 
-             {% if song.featured %}data-featured="true"{% endif %}
-             {% if song.new %}data-new="true"{% endif %}>
-            <div class="song-image">
-                <img src="{{ song.coverArt }}" alt="{{ song.songTitle }}">
-                <button class="play-btn" data-song-url="{{ song.mp3url }}" 
-                        data-song-title="{{ song.songTitle }}"
-                        data-artist="{{ song.artist }}"
-                        data-album-art="{{ song.coverArt }}">
-                    <i class="fas fa-play"></i>
-                </button>
-                {% if song.featured %}
-                <span class="featured-badge">Featured</span>
-                {% endif %}
-                {% if song.new %}
-                <span class="new-badge">New</span>
-                {% endif %}
-            </div>
-            <div class="song-info">
-                <h3>{{ song.songTitle }}</h3>
-                <p>{{ song.artist }}</p>
-            </div>
-            <div class="song-actions">
-                <button class="like-btn" data-song-id="{{ song.id }}">
-                    <i class="far fa-heart"></i>
-                </button>
-                {% if song.artistUrl %}
-                <a href="{{ song.artistUrl }}" class="artist-link" target="_blank">
-                    <i class="fas fa-user"></i>
-                </a>
-                {% endif %}
-            </div>
-        </div>
-        {% else %}
-        <div class="no-songs">
-            <p>No songs available at the moment.</p>
-        </div>
-        {% endfor %}
-    </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Search functionality
-    const searchInput = document.getElementById('search-input');
-    const songElements = document.querySelectorAll('.song-card, .song-row, .list-item');
-    
-    searchInput.addEventListener('input', function() {
-        const searchTerm = this.value.toLowerCase();
-        songElements.forEach(element => {
-            const title = element.querySelector('h3, .title').textContent.toLowerCase();
-            const artist = element.querySelector('.artist, .artist-link').textContent.toLowerCase();
-            if (title.includes(searchTerm) || artist.includes(searchTerm)) {
-                element.style.display = '';
-            } else {
-                element.style.display = 'none';
-            }
-        });
-    });
-
-    // Filter functionality
-    const filterButtons = document.querySelectorAll('.filter-btn');
-    filterButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const filter = this.dataset.filter;
-            filterButtons.forEach(btn => btn.classList.remove('active'));
-            this.classList.add('active');
-            
-            songElements.forEach(element => {
-                if (filter === 'all') {
-                    element.style.display = '';
-                } else if (filter === 'featured' && element.dataset.featured === 'true') {
-                    element.style.display = '';
-                } else if (filter === 'new' && element.dataset.new === 'true') {
-                    element.style.display = '';
-                } else {
-                    element.style.display = 'none';
-                }
-            });
-        });
-    });
-
     // View toggle functionality
     const viewToggle = document.querySelector('.view-toggle');
     const viewModes = document.querySelectorAll('.view-mode');
@@ -246,7 +153,26 @@ document.addEventListener('DOMContentLoaded', function() {
     if (preferredButton) {
         preferredButton.click();
     }
-
+    
+    // Surprise Me functionality
+    const surpriseBtn = document.getElementById('surprise-me');
+    const songElements = document.querySelectorAll('.song-row, .list-item');
+    
+    surpriseBtn.addEventListener('click', function() {
+        const elements = Array.from(songElements);
+        const randomIndex = Math.floor(Math.random() * elements.length);
+        const randomSong = elements[randomIndex];
+        
+        // Remove highlight from all songs
+        elements.forEach(el => el.classList.remove('highlighted'));
+        
+        // Add highlight to random song
+        randomSong.classList.add('highlighted');
+        
+        // Scroll to the highlighted song
+        randomSong.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+    
     // Play button functionality
     const playButtons = document.querySelectorAll('.play-btn');
     playButtons.forEach(button => {
@@ -266,7 +192,7 @@ document.addEventListener('DOMContentLoaded', function() {
             this.innerHTML = '<i class="fas fa-pause"></i>';
         });
     });
-
+    
     // Like button functionality
     const likeButtons = document.querySelectorAll('.like-btn');
     likeButtons.forEach(button => {
@@ -293,4 +219,4 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
-{% endblock %}
+{% endblock %} 
