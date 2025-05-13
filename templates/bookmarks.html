@@ -12,40 +12,163 @@
     </div>
     {% endif %}
 
-    <div class="bookmarks-grid">
+    <!-- View Toggle -->
+    <div class="view-toggle">
+        <button class="active" data-view="table">
+            <i class="fas fa-list"></i> Table
+        </button>
+        <button data-view="list">
+            <i class="fas fa-align-left"></i> List
+        </button>
+        <button data-view="grid">
+            <i class="fas fa-th-large"></i> Grid
+        </button>
+    </div>
+
+    <!-- Table View -->
+    <div class="songs-table view-mode active">
+        <table>
+            <thead>
+                <tr>
+                    <th class="play-col"></th>
+                    <th class="title-col">Title</th>
+                    <th class="artist-col">Artist</th>
+                    <th class="album-col">Album</th>
+                    <th class="duration-col">Duration</th>
+                    <th class="like-col"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for bookmark in bookmarks %}
+                {% if bookmark.item_type == 'music' %}
+                <tr class="song-row" data-song-id="{{ bookmark.item_id }}">
+                    <td class="play-col">
+                        <button class="play-btn" data-song-url="{{ bookmark.mp3url }}"
+                                data-song-title="{{ bookmark.songTitle }}"
+                                data-artist="{{ bookmark.artist }}"
+                                data-album-art="{{ bookmark.coverArt }}">
+                            <i class="fas fa-play"></i>
+                        </button>
+                    </td>
+                    <td class="title-col">
+                        <div class="song-title">
+                            <img src="{{ bookmark.coverArt }}" alt="{{ bookmark.songTitle }}" class="song-thumbnail">
+                            <div class="title-info">
+                                <span class="title">{{ bookmark.songTitle }}</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="artist-col">
+                        <a href="{{ bookmark.artistUrl }}" class="artist-link" target="_blank">
+                            {{ bookmark.artist }}
+                        </a>
+                    </td>
+                    <td class="album-col">{{ bookmark.album }}</td>
+                    <td class="duration-col">{{ bookmark.duration|default('3:45') }}</td>
+                    <td class="like-col">
+                        <button class="like-btn active" data-song-id="{{ bookmark.item_id }}">
+                            <i class="fas fa-heart"></i>
+                        </button>
+                    </td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- List View -->
+    <div class="songs-list view-mode">
         {% for bookmark in bookmarks %}
-        <div class="bookmark-card" data-item-id="{{ bookmark.item_id }}"
-            data-item-type="{{ bookmark.item_type }}">
-            <div class="bookmark-header">
-                <h3>
-                    {% if bookmark.item_type == 'music' %}
-                    <i class="fas fa-music"></i>
-                    {% elif bookmark.item_type == 'news' %}
-                    <i class="fas fa-newspaper"></i>
-                    {% elif bookmark.item_type == 'podcast' %}
-                    <i class="fas fa-podcast"></i>
-                    {% else %}
-                    <i class="fas fa-bookmark"></i>
-                    {% endif %}
-                    {{ bookmark.item_type|title }}
-                </h3>
-                <button class="remove-bookmark-btn"
-                    data-bookmark-id="{{ bookmark.id }}">
-                    <i class="fas fa-times"></i>
+        {% if bookmark.item_type == 'music' %}
+        <div class="list-item" data-song-id="{{ bookmark.item_id }}">
+            <div class="list-info">
+                <h3>{{ bookmark.songTitle }}</h3>
+                <p class="artist">{{ bookmark.artist }}</p>
+            </div>
+            <div class="list-controls">
+                <button class="play-btn" data-song-url="{{ bookmark.mp3url }}"
+                        data-song-title="{{ bookmark.songTitle }}"
+                        data-artist="{{ bookmark.artist }}"
+                        data-album-art="{{ bookmark.coverArt }}">
+                    <i class="fas fa-play"></i>
+                </button>
+                <button class="like-btn active" data-song-id="{{ bookmark.item_id }}">
+                    <i class="fas fa-heart"></i>
                 </button>
             </div>
-            <div class="bookmark-content">
-                <p>Item ID: {{ bookmark.item_id }}</p>
-            </div>
-            <div class="bookmark-actions">
-                <a href="#" class="action-button view-item-btn">View Item</a>
-            </div>
         </div>
-        {% else %}
-        <div class="no-bookmarks">
-            <p>You haven't bookmarked any items yet.</p>
-        </div>
+        {% endif %}
         {% endfor %}
+    </div>
+
+    <!-- Grid View -->
+    <div class="songs-grid view-mode">
+        {% for bookmark in bookmarks %}
+        {% if bookmark.item_type == 'music' %}
+        <div class="song-card" data-song-id="{{ bookmark.item_id }}">
+            <div class="song-image">
+                <img src="{{ bookmark.coverArt }}" alt="{{ bookmark.songTitle }}">
+                <button class="play-btn" data-song-url="{{ bookmark.mp3url }}"
+                        data-song-title="{{ bookmark.songTitle }}"
+                        data-artist="{{ bookmark.artist }}"
+                        data-album-art="{{ bookmark.coverArt }}">
+                    <i class="fas fa-play"></i>
+                </button>
+            </div>
+            <div class="song-info">
+                <h3>{{ bookmark.songTitle }}</h3>
+                <p>{{ bookmark.artist }}</p>
+            </div>
+            <div class="song-actions">
+                <button class="like-btn active" data-song-id="{{ bookmark.item_id }}">
+                    <i class="fas fa-heart"></i>
+                </button>
+                {% if bookmark.artistUrl %}
+                <a href="{{ bookmark.artistUrl }}" class="artist-link" target="_blank">
+                    <i class="fas fa-user"></i>
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+
+    <!-- Other Bookmarks -->
+    <div class="other-bookmarks">
+        <h2>Other Bookmarks</h2>
+        <div class="bookmarks-grid">
+            {% for bookmark in bookmarks %}
+            {% if bookmark.item_type != 'music' %}
+            <div class="bookmark-card" data-item-id="{{ bookmark.item_id }}"
+                data-item-type="{{ bookmark.item_type }}">
+                <div class="bookmark-header">
+                    <h3>
+                        {% if bookmark.item_type == 'news' %}
+                        <i class="fas fa-newspaper"></i>
+                        {% elif bookmark.item_type == 'podcast' %}
+                        <i class="fas fa-podcast"></i>
+                        {% else %}
+                        <i class="fas fa-bookmark"></i>
+                        {% endif %}
+                        {{ bookmark.item_type|title }}
+                    </h3>
+                    <button class="remove-bookmark-btn"
+                        data-bookmark-id="{{ bookmark.id }}">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="bookmark-content">
+                    <p>Item ID: {{ bookmark.item_id }}</p>
+                </div>
+                <div class="bookmark-actions">
+                    <a href="#" class="action-button view-item-btn">View Item</a>
+                </div>
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
     </div>
 </div>
 {% endblock %}
@@ -53,7 +176,94 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Remove bookmark functionality
+    // View toggle functionality
+    const viewToggle = document.querySelector('.view-toggle');
+    const viewModes = document.querySelectorAll('.view-mode');
+    
+    viewToggle.addEventListener('click', function(e) {
+        if (e.target.matches('button')) {
+            const view = e.target.dataset.view;
+            
+            // Update active button
+            viewToggle.querySelectorAll('button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            e.target.classList.add('active');
+            
+            // Update active view
+            viewModes.forEach(mode => {
+                mode.classList.remove('active');
+                if (mode.classList.contains(`songs-${view}`)) {
+                    mode.classList.add('active');
+                }
+            });
+            
+            // Store preference
+            localStorage.setItem('preferred-view', view);
+        }
+    });
+    
+    // Load preferred view
+    const preferredView = localStorage.getItem('preferred-view') || 'table';
+    const preferredButton = viewToggle.querySelector(`[data-view="${preferredView}"]`);
+    if (preferredButton) {
+        preferredButton.click();
+    }
+
+    // Play button functionality
+    const playButtons = document.querySelectorAll('.play-btn');
+    playButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const songUrl = this.dataset.songUrl;
+            const songTitle = this.dataset.songTitle;
+            const artist = this.dataset.artist;
+            const albumArt = this.dataset.albumArt;
+            
+            // Play the song using the global audio player
+            playSong(songUrl, songTitle, artist, albumArt);
+            
+            // Update play buttons
+            playButtons.forEach(btn => {
+                btn.innerHTML = '<i class="fas fa-play"></i>';
+            });
+            this.innerHTML = '<i class="fas fa-pause"></i>';
+        });
+    });
+
+    // Like button functionality
+    const likeButtons = document.querySelectorAll('.like-btn');
+    likeButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const songId = this.dataset.songId;
+            fetch('/bookmark', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `item_id=${songId}&item_type=music`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    this.classList.toggle('active');
+                    const icon = this.querySelector('i');
+                    icon.classList.toggle('far');
+                    icon.classList.toggle('fas');
+                    
+                    // Remove the song from the view if unliked
+                    if (!this.classList.contains('active')) {
+                        const songElement = this.closest('.song-row, .list-item, .song-card');
+                        if (songElement) {
+                            songElement.remove();
+                        }
+                    }
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    });
+
+    // Remove bookmark functionality for non-music items
     const removeButtons = document.querySelectorAll('.remove-bookmark-btn');
     removeButtons.forEach(button => {
         button.addEventListener('click', function() {
@@ -84,9 +294,6 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Redirect to the appropriate page based on item type
             switch(itemType) {
-                case 'music':
-                    window.location.href = `/music#${itemId}`;
-                    break;
                 case 'news':
                     window.location.href = `/news#${itemId}`;
                     break;
