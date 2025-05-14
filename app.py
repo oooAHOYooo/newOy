@@ -4,7 +4,9 @@ import sqlite3
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 from pathlib import Path
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.cron import CronTrigger
 
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', 'your-secret-key-here')  # Change this in production
@@ -591,6 +593,80 @@ def handle_now_playing():
         "success": True,
         "now_playing": session.get("now_playing", {})
     })
+
+#############
+# CONTENT SCHEDULER
+#############
+scheduler = BackgroundScheduler()
+
+def update_broadcast_content():
+    """Update broadcast content based on time of day"""
+    current_hour = datetime.now().hour
+    if 6 <= current_hour < 12:
+        time_slot = "morning"
+    elif 12 <= current_hour < 18:
+        time_slot = "afternoon"
+    elif 18 <= current_hour < 22:
+        time_slot = "evening"
+    else:
+        time_slot = "late_night"
+    
+    # Load and update broadcast content
+    broadcast_file = os.path.join(DATA_DIR, "broadcast_schedule.json")
+    if os.path.exists(broadcast_file):
+        with open(broadcast_file, "r", encoding="utf-8") as f:
+            schedule = json.load(f)
+            if time_slot in schedule:
+                # Update the current broadcast content
+                with open(os.path.join(DATA_DIR, "current_broadcast.json"), "w") as f:
+                    json.dump(schedule[time_slot], f)
+
+def update_featured_content():
+    """Update featured content periodically"""
+    # Load all available content
+    with open(os.path.join(DATA_DIR, "newsletter.json"), "r") as f:
+        all_content = json.load(f)
+    
+    # Select featured content based on recency and engagement
+    featured = []
+    for item in all_content.get("newsletters", []):
+        if item.get("active", False):
+            featured.append(item)
+    
+    # Update featured content
+    with open(os.path.join(DATA_DIR, "featured_content.json"), "w") as f:
+        json.dump({"featured": featured[:5]}, f)
+
+def update_playlist():
+    """Update music playlist based on time and user preferences"""
+    with open(os.path.join(DATA_DIR, "radioPlay.json"), "r") as f:
+        all_songs = json.load(f)
+    
+    # Create time-based playlists
+    current_hour = datetime.now().hour
+    if 6 <= current_hour < 12:
+        mood = "energetic"
+    elif 12 <= current_hour < 18:
+        mood = "focused"
+    elif 18 <= current_hour < 22:
+        mood = "relaxed"
+    else:
+        mood = "chill"
+    
+    # Filter songs by mood and update playlist
+    playlist = [song for song in all_songs.get("songs", []) 
+               if song.get("mood", "").lower() == mood]
+    
+    with open(os.path.join(DATA_DIR, "current_playlist.json"), "w") as f:
+        json.dump({"songs": playlist}, f)
+
+# Schedule content updates
+scheduler.add_job(update_broadcast_content, CronTrigger(minute='0'))  # Every hour
+scheduler.add_job(update_featured_content, CronTrigger(hour='*/4'))   # Every 4 hours
+scheduler.add_job(update_playlist, CronTrigger(minute='*/30'))       # Every 30 minutes
+
+# Start the scheduler
+scheduler.start()
 
 # Initialize the app
 init_app()
