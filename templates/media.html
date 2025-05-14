@@ -6,6 +6,11 @@
 <div class="media-container">
     <h1>Ahoy TV</h1>
 
+    <!-- Test Preview Button -->
+    <button onclick="previewRandomChannel()" class="test-preview-btn" style="margin-bottom: 20px;">
+        <i class="fas fa-random"></i> Test Random Preview
+    </button>
+
     <!-- Main Video Player -->
     <div class="main-player">
         <video id="main-video" controls>
@@ -15,6 +20,14 @@
         <div class="now-playing">
             <h2 id="current-title">Select a show to start watching</h2>
             <p id="current-description"></p>
+            <div class="preview-controls" style="display: none;">
+                <button id="play-live-btn" class="preview-btn">
+                    <i class="fas fa-play"></i> Play Live
+                </button>
+                <button id="replay-preview-btn" class="preview-btn">
+                    <i class="fas fa-redo"></i> Replay Preview
+                </button>
+            </div>
         </div>
     </div>
 
@@ -212,6 +225,35 @@
     margin-bottom: 2px;
 }
 
+.preview-controls {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    gap: 16px;
+    align-items: center;
+}
+
+.preview-btn {
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    border: 2px solid white;
+    padding: 12px 24px;
+    border-radius: 30px;
+    font-size: 1.2em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.preview-btn:hover {
+    background: rgba(255, 255, 255, 0.9);
+    color: black;
+}
+
 @media (max-width: 900px) {
     .guide-header-row, .guide-row {
         flex-direction: column;
@@ -224,6 +266,25 @@
     .guide-times {
         gap: 30px;
     }
+}
+
+.test-preview-btn {
+    background: var(--primary-color);
+    color: var(--text-color);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-size: 1em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.test-preview-btn:hover {
+    background: var(--accent-color);
+    transform: translateY(-2px);
 }
 </style>
 {% endblock %}
@@ -295,6 +356,103 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         })
         .catch(error => console.error('Error loading now playing:', error));
+});
+
+// Function to preview a random channel
+function previewRandomChannel() {
+    // Get all channels from the DOM
+    const channels = document.querySelectorAll('.guide-row');
+    if (!channels.length) return;
+
+    // Pick a random channel
+    const randomChannel = channels[Math.floor(Math.random() * channels.length)];
+    
+    // Get the channel name and current show
+    const channelName = randomChannel.querySelector('.guide-channel-name').textContent;
+    const currentShow = randomChannel.querySelector('.guide-channel-show').textContent;
+    
+    // Get all videos for this channel
+    const videos = randomChannel.querySelectorAll('.video-item');
+    if (!videos.length) return;
+    
+    // Pick a random video
+    const randomVideo = videos[Math.floor(Math.random() * videos.length)];
+    
+    // Get video details
+    const videoSrc = randomVideo.dataset.videoSrc;
+    const videoTitle = randomVideo.dataset.videoTitle;
+    
+    // Update main video
+    const mainVideo = document.getElementById('main-video');
+    mainVideo.src = videoSrc;
+    mainVideo.muted = true;
+    
+    // Calculate a random timestamp (between 0 and 90% of video duration)
+    mainVideo.addEventListener('loadedmetadata', function onLoad() {
+        const maxTime = mainVideo.duration * 0.9; // Don't start too close to the end
+        const randomTime = Math.random() * maxTime;
+        mainVideo.currentTime = randomTime;
+        mainVideo.pause();
+        
+        // Show the preview controls
+        const previewControls = document.querySelector('.preview-controls');
+        previewControls.style.display = 'flex';
+        
+        // Store the current timestamp for replay functionality
+        mainVideo.dataset.previewTime = randomTime;
+        
+        // Remove the event listener after it's used
+        mainVideo.removeEventListener('loadedmetadata', onLoad);
+    });
+    
+    // Update now playing info
+    const currentTitle = document.getElementById('current-title');
+    currentTitle.textContent = `${channelName} - ${videoTitle}`;
+    
+    // Update now playing widget if it exists
+    const nowPlayingWidget = document.getElementById('now-playing-widget');
+    if (nowPlayingWidget) {
+        const albumArt = nowPlayingWidget.querySelector('.album-art img');
+        const title = nowPlayingWidget.querySelector('.song-info .title');
+        const artist = nowPlayingWidget.querySelector('.song-info .artist');
+        
+        if (albumArt) albumArt.src = randomVideo.querySelector('img').src;
+        if (title) title.textContent = videoTitle;
+        if (artist) artist.textContent = channelName;
+    }
+    
+    // Highlight active item
+    document.querySelectorAll('.video-item').forEach(v => v.classList.remove('active'));
+    randomVideo.classList.add('active');
+}
+
+// Add event listeners for the preview buttons
+document.addEventListener('DOMContentLoaded', function() {
+    const playLiveBtn = document.getElementById('play-live-btn');
+    const replayPreviewBtn = document.getElementById('replay-preview-btn');
+    const mainVideo = document.getElementById('main-video');
+    
+    playLiveBtn.addEventListener('click', function() {
+        mainVideo.muted = false;
+        mainVideo.play();
+        document.querySelector('.preview-controls').style.display = 'none';
+    });
+    
+    replayPreviewBtn.addEventListener('click', function() {
+        // Reset to the stored preview time
+        if (mainVideo.dataset.previewTime) {
+            mainVideo.currentTime = parseFloat(mainVideo.dataset.previewTime);
+            mainVideo.muted = true;
+            mainVideo.pause();
+        }
+    });
+    
+    // Hide preview controls when video is played normally
+    mainVideo.addEventListener('play', function() {
+        if (!mainVideo.muted) {
+            document.querySelector('.preview-controls').style.display = 'none';
+        }
+    });
 });
 </script>
 {% endblock %}
