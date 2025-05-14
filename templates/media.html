@@ -1,15 +1,25 @@
 {% extends "base.html" %}
 
-{% block title %}Media - Ahoy Indie Media{% endblock %}
+{% block title %}Channel Surf - Ahoy Indie Media{% endblock %}
 
 {% block content %}
 <div class="media-container">
-    <h1>Ahoy TV</h1>
-
-    <!-- Test Preview Button -->
-    <button onclick="previewRandomChannel()" class="test-preview-btn" style="margin-bottom: 20px;">
-        <i class="fas fa-random"></i> Test Random Preview
-    </button>
+    <div class="channel-header">
+        <div class="header-content">
+            <div class="header-left">
+                <h1>Channel Surf</h1>
+                <p class="channel-description">Discover indie content across our curated channels</p>
+            </div>
+            <div class="preview-controls">
+                <button id="play-live-btn" class="preview-btn primary-btn">
+                    <i class="fas fa-play"></i> Play Live
+                </button>
+                <button id="replay-preview-btn" class="preview-btn secondary-btn">
+                    <i class="fas fa-redo"></i> Replay Preview
+                </button>
+            </div>
+        </div>
+    </div>
 
     <!-- Main Video Player -->
     <div class="main-player">
@@ -18,49 +28,77 @@
             Your browser does not support the video tag.
         </video>
         <div class="now-playing">
-            <h2 id="current-title">Select a show to start watching</h2>
+            <h2 id="current-title">Loading channel...</h2>
             <p id="current-description"></p>
-            <div class="preview-controls" style="display: none;">
-                <button id="play-live-btn" class="preview-btn">
-                    <i class="fas fa-play"></i> Play Live
-                </button>
-                <button id="replay-preview-btn" class="preview-btn">
-                    <i class="fas fa-redo"></i> Replay Preview
-                </button>
-            </div>
         </div>
     </div>
 
-    <!-- TV Guide Grid -->
-    <div class="tv-guide-grid">
-        <div class="guide-header-row">
-            <div class="guide-time-label"></div>
-            <div class="guide-times">
-                <span>Now</span>
-                <span>+30 min</span>
-                <span>+1 hr</span>
-                <span>+1.5 hr</span>
-            </div>
+    <!-- Channel Guide -->
+    <div class="channel-guide">
+        <div class="guide-header">
+            <h2>Channel Guide</h2>
+            <button onclick="previewRandomChannel()" class="surf-btn">
+                <i class="fas fa-random"></i> Surf Random Channel
+            </button>
         </div>
-        {% for channel in channels %}
-        <div class="guide-row">
-            <div class="guide-channel-info">
-                <img src="{{ channel.thumbnail }}" alt="{{ channel.name }}" class="guide-channel-thumb">
-                <div class="guide-channel-meta">
-                    <div class="guide-channel-name">{{ channel.name }}</div>
-                    <div class="guide-channel-show">{{ channel.currentShow }}</div>
+        <div class="tv-guide-grid">
+            <div class="guide-header-row">
+                <div class="guide-time-label"></div>
+                <div class="guide-times">
+                    <span>Now</span>
+                    <span>+30 min</span>
+                    <span>+1 hr</span>
+                    <span>+1.5 hr</span>
                 </div>
             </div>
-            <div class="guide-channel-shows">
-                {% for video in channel.content %}
-                <div class="guide-show-block video-item" data-video-src="{{ video.src }}" data-video-title="{{ video.title }}" data-video-description="{{ video.description }}">
-                    <div class="guide-show-title">{{ video.title }}</div>
-                    <img src="{{ video.thumbnail }}" alt="{{ video.title }}">
+            {% for channel in channels %}
+            <div class="guide-row">
+                <div class="guide-channel-info">
+                    <img src="{{ channel.thumbnail }}" alt="{{ channel.name }}" class="guide-channel-thumb">
+                    <div class="guide-channel-meta">
+                        <div class="guide-channel-name">{{ channel.name }}</div>
+                        <div class="guide-channel-show">{{ channel.currentShow }}</div>
+                    </div>
                 </div>
-                {% endfor %}
+                <div class="guide-channel-shows">
+                    {% for video in channel.content %}
+                    <div class="guide-show-block video-item" data-video-src="{{ video.src }}" data-video-title="{{ video.title }}" data-video-description="{{ video.description }}">
+                        <div class="guide-show-title">{{ video.title }}</div>
+                        <img src="{{ video.thumbnail }}" alt="{{ video.title }}">
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- User Guide -->
+    <div class="user-guide">
+        <h2>How to Use Channel Surf</h2>
+        <div class="guide-steps">
+            <div class="guide-step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <h3>Start Surfing</h3>
+                    <p>Click "Surf Random Channel" to discover content from any of our channels. The video will load muted and paused at a random point.</p>
+                </div>
+            </div>
+            <div class="guide-step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <h3>Preview Content</h3>
+                    <p>Use "Replay Preview" to reset the video to the same preview point, or "Play Live" to unmute and start watching from that point.</p>
+                </div>
+            </div>
+            <div class="guide-step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <h3>Explore Channels</h3>
+                    <p>Browse through our channel guide to find specific content, or keep surfing randomly to discover new shows and videos.</p>
+                </div>
             </div>
         </div>
-        {% endfor %}
     </div>
 </div>
 {% endblock %}
@@ -73,10 +111,114 @@
     margin: 0 auto;
 }
 
+.channel-header {
+    margin-bottom: 30px;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.header-left {
+    flex: 1;
+}
+
+.channel-header h1 {
+    font-size: 2.5em;
+    margin-bottom: 10px;
+    color: var(--text-color);
+}
+
+.channel-description {
+    color: var(--secondary-color);
+    font-size: 1.1em;
+}
+
+.preview-controls {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+}
+
+.preview-btn {
+    padding: 12px 24px;
+    border-radius: 30px;
+    font-size: 1.1em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: none;
+    font-weight: 600;
+}
+
+.preview-btn.primary-btn {
+    background: var(--accent-color);
+    color: var(--text-color);
+}
+
+.preview-btn.secondary-btn {
+    background: var(--primary-color);
+    color: var(--text-color);
+}
+
+.preview-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.preview-btn.primary-btn:hover {
+    background: var(--accent-color-hover, #ff6b6b);
+}
+
+.preview-btn.secondary-btn:hover {
+    background: var(--primary-color-hover, #4a90e2);
+}
+
+.channel-guide {
+    margin-top: 40px;
+}
+
+.guide-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.guide-header h2 {
+    font-size: 1.8em;
+    color: var(--text-color);
+    margin: 0;
+}
+
+.surf-btn {
+    background: var(--primary-color);
+    color: var(--text-color);
+    border: none;
+    padding: 12px 24px;
+    border-radius: 30px;
+    font-size: 1.1em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.surf-btn:hover {
+    background: var(--accent-color);
+    transform: translateY(-2px);
+}
+
 .main-player {
     position: relative;
     background: #000;
-    border-radius: 8px;
+    border-radius: 12px;
     overflow: hidden;
     margin-bottom: 20px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -99,11 +241,11 @@
 }
 
 .tv-guide-grid {
-    background: #222;
-    border-radius: 8px;
+    background: var(--dark-bg);
+    border-radius: 12px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.12);
     overflow: hidden;
-    margin-top: 30px;
+    margin-top: 20px;
     padding-bottom: 10px;
 }
 
@@ -225,66 +367,79 @@
     margin-bottom: 2px;
 }
 
-.preview-controls {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    display: flex;
-    gap: 16px;
-    align-items: center;
+.user-guide {
+    margin-top: 60px;
+    padding: 40px;
+    background: var(--dark-bg);
+    border-radius: 12px;
 }
 
-.preview-btn {
-    background: rgba(0, 0, 0, 0.8);
-    color: white;
-    border: 2px solid white;
-    padding: 12px 24px;
-    border-radius: 30px;
+.user-guide h2 {
+    text-align: center;
+    margin-bottom: 40px;
+    color: var(--text-color);
+    font-size: 2em;
+}
+
+.guide-steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.guide-step {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+}
+
+.step-number {
+    background: var(--accent-color);
+    color: var(--text-color);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-size: 1.2em;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    gap: 8px;
+    font-weight: bold;
+    flex-shrink: 0;
 }
 
-.preview-btn:hover {
-    background: rgba(255, 255, 255, 0.9);
-    color: black;
+.step-content h3 {
+    color: var(--text-color);
+    margin-bottom: 10px;
+    font-size: 1.3em;
+}
+
+.step-content p {
+    color: var(--secondary-color);
+    line-height: 1.6;
 }
 
 @media (max-width: 900px) {
-    .guide-header-row, .guide-row {
+    .header-content {
         flex-direction: column;
-        align-items: flex-start;
-    }
-    .guide-channel-info, .guide-channel-shows {
-        width: 100%;
-        padding: 10px;
-    }
-    .guide-times {
+        text-align: center;
         gap: 30px;
     }
-}
-
-.test-preview-btn {
-    background: var(--primary-color);
-    color: var(--text-color);
-    border: none;
-    padding: 10px 20px;
-    border-radius: 6px;
-    font-size: 1em;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.test-preview-btn:hover {
-    background: var(--accent-color);
-    transform: translateY(-2px);
+    
+    .preview-controls {
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .guide-steps {
+        grid-template-columns: 1fr;
+    }
+    
+    .user-guide {
+        padding: 30px 20px;
+    }
 }
 </style>
 {% endblock %}
@@ -295,9 +450,43 @@ document.addEventListener('DOMContentLoaded', function() {
     const mainVideo = document.getElementById('main-video');
     const currentTitle = document.getElementById('current-title');
     const currentDescription = document.getElementById('current-description');
-    const player = document.getElementById('music-player');
-    const nowPlayingWidget = document.getElementById('now-playing-widget');
-
+    const playLiveBtn = document.getElementById('play-live-btn');
+    const replayPreviewBtn = document.getElementById('replay-preview-btn');
+    
+    // Initialize preview controls
+    playLiveBtn.addEventListener('click', function() {
+        if (mainVideo.src) {
+            mainVideo.muted = false;
+            mainVideo.play();
+        }
+    });
+    
+    replayPreviewBtn.addEventListener('click', function() {
+        if (mainVideo.dataset.previewTime) {
+            mainVideo.currentTime = parseFloat(mainVideo.dataset.previewTime);
+            mainVideo.muted = true;
+            mainVideo.pause();
+        }
+    });
+    
+    // Function to load a video with preview settings
+    function loadVideoWithPreview(videoElement, videoSrc, videoTitle, videoDescription) {
+        mainVideo.src = videoSrc;
+        currentTitle.textContent = videoTitle;
+        currentDescription.textContent = videoDescription || '';
+        
+        // Calculate and store preview time
+        mainVideo.addEventListener('loadedmetadata', function onLoad() {
+            const maxTime = mainVideo.duration * 0.9;
+            const randomTime = Math.random() * maxTime;
+            mainVideo.currentTime = randomTime;
+            mainVideo.muted = true;
+            mainVideo.pause();
+            mainVideo.dataset.previewTime = randomTime;
+            mainVideo.removeEventListener('loadedmetadata', onLoad);
+        });
+    }
+    
     // Handle video selection
     document.querySelectorAll('.video-item').forEach(item => {
         item.addEventListener('click', function() {
@@ -305,57 +494,24 @@ document.addEventListener('DOMContentLoaded', function() {
             const videoTitle = this.dataset.videoTitle;
             const videoDescription = this.dataset.videoDescription || '';
             
-            // Update main video
-            mainVideo.src = videoSrc;
-            currentTitle.textContent = videoTitle;
-            currentDescription.textContent = videoDescription;
-            mainVideo.play();
-            
-            // Update now playing widget
-            const albumArt = nowPlayingWidget.querySelector('.album-art img');
-            const title = nowPlayingWidget.querySelector('.song-info .title');
-            const artist = nowPlayingWidget.querySelector('.song-info .artist');
-            
-            albumArt.src = this.querySelector('img').src;
-            title.textContent = videoTitle;
-            artist.textContent = 'Video';
-            
-            // Show player
-            player.classList.remove('minimized');
+            loadVideoWithPreview(mainVideo, videoSrc, videoTitle, videoDescription);
             
             // Highlight active item
             document.querySelectorAll('.video-item').forEach(v => v.classList.remove('active'));
             this.classList.add('active');
-
-            // Sync with server
-            fetch('/api/now-playing', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    type: 'video',
-                    title: videoTitle,
-                    artist: 'Video',
-                    albumArt: this.querySelector('img').src,
-                    url: videoSrc
-                })
-            }).catch(error => console.error('Error updating now playing:', error));
         });
     });
 
-    // Initialize now playing from server
-    fetch('/api/now-playing')
-        .then(response => response.json())
-        .then(data => {
-            if (data.now_playing && data.now_playing.type === 'video') {
-                const videoItem = document.querySelector(`[data-video-src="${data.now_playing.url}"]`);
-                if (videoItem) {
-                    videoItem.click();
-                }
-            }
-        })
-        .catch(error => console.error('Error loading now playing:', error));
+    // Load the first video automatically when page loads
+    const firstVideo = document.querySelector('.video-item');
+    if (firstVideo) {
+        const videoSrc = firstVideo.dataset.videoSrc;
+        const videoTitle = firstVideo.dataset.videoTitle;
+        const videoDescription = firstVideo.dataset.videoDescription || '';
+        
+        loadVideoWithPreview(mainVideo, videoSrc, videoTitle, videoDescription);
+        firstVideo.classList.add('active');
+    }
 });
 
 // Function to preview a random channel
@@ -394,10 +550,6 @@ function previewRandomChannel() {
         mainVideo.currentTime = randomTime;
         mainVideo.pause();
         
-        // Show the preview controls
-        const previewControls = document.querySelector('.preview-controls');
-        previewControls.style.display = 'flex';
-        
         // Store the current timestamp for replay functionality
         mainVideo.dataset.previewTime = randomTime;
         
@@ -409,50 +561,9 @@ function previewRandomChannel() {
     const currentTitle = document.getElementById('current-title');
     currentTitle.textContent = `${channelName} - ${videoTitle}`;
     
-    // Update now playing widget if it exists
-    const nowPlayingWidget = document.getElementById('now-playing-widget');
-    if (nowPlayingWidget) {
-        const albumArt = nowPlayingWidget.querySelector('.album-art img');
-        const title = nowPlayingWidget.querySelector('.song-info .title');
-        const artist = nowPlayingWidget.querySelector('.song-info .artist');
-        
-        if (albumArt) albumArt.src = randomVideo.querySelector('img').src;
-        if (title) title.textContent = videoTitle;
-        if (artist) artist.textContent = channelName;
-    }
-    
     // Highlight active item
     document.querySelectorAll('.video-item').forEach(v => v.classList.remove('active'));
     randomVideo.classList.add('active');
 }
-
-// Add event listeners for the preview buttons
-document.addEventListener('DOMContentLoaded', function() {
-    const playLiveBtn = document.getElementById('play-live-btn');
-    const replayPreviewBtn = document.getElementById('replay-preview-btn');
-    const mainVideo = document.getElementById('main-video');
-    
-    playLiveBtn.addEventListener('click', function() {
-        mainVideo.muted = false;
-        mainVideo.play();
-        document.querySelector('.preview-controls').style.display = 'none';
-    });
-    
-    replayPreviewBtn.addEventListener('click', function() {
-        // Reset to the stored preview time
-        if (mainVideo.dataset.previewTime) {
-            mainVideo.currentTime = parseFloat(mainVideo.dataset.previewTime);
-            mainVideo.muted = true;
-            mainVideo.pause();
-        }
-    });
-    
-    // Hide preview controls when video is played normally
-    mainVideo.addEventListener('play', function() {
-        if (!mainVideo.muted) {
-            document.querySelector('.preview-controls').style.display = 'none';
-        }
-    });
-});
 </script>
 {% endblock %}
