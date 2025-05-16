@@ -7,6 +7,8 @@ import time
 from datetime import datetime, timedelta
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
+from terminal_app import TerminalApp
+import random
 
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', 'your-secret-key-here')  # Change this in production
@@ -563,6 +565,50 @@ def handle_theme():
         return jsonify({"success": True, "theme": theme})
     return jsonify({"theme": session.get("theme", "default")})
 
+def get_random_media():
+    """Get a random media item (music or podcast)"""
+    try:
+        # Load music data
+        with open('data/radioPlay.json', 'r') as f:
+            music_data = json.load(f)
+            songs = music_data.get('songs', [])
+        
+        # Load podcast data
+        with open('data/podcasts.json', 'r') as f:
+            podcast_data = json.load(f)
+            podcasts = podcast_data.get('podcasts', [])
+        
+        # Combine all media
+        all_media = []
+        
+        # Add songs
+        for song in songs:
+            all_media.append({
+                'type': 'music',
+                'title': song.get('songTitle', ''),
+                'artist': song.get('artist', ''),
+                'albumArt': song.get('coverArt', ''),
+                'url': song.get('mp3url', '')
+            })
+        
+        # Add podcasts
+        for podcast in podcasts:
+            all_media.append({
+                'type': 'podcast',
+                'title': podcast.get('title', ''),
+                'artist': podcast.get('host', ''),
+                'albumArt': podcast.get('cover_art', ''),
+                'url': podcast.get('mp3url', '')
+            })
+        
+        # Return random media if available
+        if all_media:
+            return random.choice(all_media)
+        return None
+    except Exception as e:
+        app.logger.error(f"Error getting random media: {str(e)}")
+        return None
+
 @app.route("/api/now-playing", methods=["GET", "POST"])
 def handle_now_playing():
     """Handle now playing updates and retrieval"""
@@ -570,7 +616,7 @@ def handle_now_playing():
         try:
             data = request.json
             session["now_playing"] = {
-                "type": data.get("type", "music"),  # music, video, or podcast
+                "type": data.get("type", "music"),
                 "title": data.get("title", ""),
                 "artist": data.get("artist", ""),
                 "albumArt": data.get("albumArt", ""),
@@ -588,11 +634,84 @@ def handle_now_playing():
                 "error": str(e)
             }), 500
     
-    # GET request - return current now playing state
+    # GET request - return current now playing state or random media
+    current_playing = session.get("now_playing", {})
+    if not current_playing:
+        # If nothing is playing, get random media
+        random_media = get_random_media()
+        if random_media:
+            session["now_playing"] = {
+                "type": random_media["type"],
+                "title": random_media["title"],
+                "artist": random_media["artist"],
+                "albumArt": random_media["albumArt"],
+                "url": random_media["url"],
+                "timestamp": datetime.now().isoformat()
+            }
+            current_playing = session["now_playing"]
+    
     return jsonify({
         "success": True,
-        "now_playing": session.get("now_playing", {})
+        "now_playing": current_playing
     })
+
+@app.route("/api/llm-chat", methods=["POST"])
+def handle_llm_chat():
+    """Handle LLM chat interactions"""
+    try:
+        data = request.json
+        user_message = data.get("message", "")
+        
+        # Store chat history in session if it doesn't exist
+        if "chat_history" not in session:
+            session["chat_history"] = []
+            
+        # Add user message to history
+        session["chat_history"].append({
+            "role": "user",
+            "message": user_message,
+            "timestamp": datetime.now().isoformat()
+        })
+        
+        # Generate response based on message content
+        response_message = generate_chat_response(user_message)
+        
+        response = {
+            "role": "assistant",
+            "message": response_message,
+            "timestamp": datetime.now().isoformat()
+        }
+        
+        # Add response to history
+        session["chat_history"].append(response)
+        
+        return jsonify({
+            "success": True,
+            "response": response
+        })
+    except Exception as e:
+        app.logger.error(f"Error in LLM chat: {str(e)}")
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500
+
+def generate_chat_response(message):
+    """Generate a response based on the user's message"""
+    message = message.lower()
+    
+    # Check for media-related queries
+    if any(word in message for word in ['play', 'music', 'song', 'podcast']):
+        random_media = get_random_media()
+        if random_media:
+            return f"Playing {random_media['type']}: {random_media['title']} by {random_media['artist']}"
+    
+    # Check for help-related queries
+    if 'help' in message:
+        return "Available commands:\n- play: Play random media\n- help: Show this help message\n- exit: Exit chat mode"
+    
+    # Default response
+    return f"I received your message: {message}"
 
 #############
 # CONTENT SCHEDULER
@@ -670,6 +789,55 @@ scheduler.start()
 
 # Initialize the app
 init_app()
+
+# Initialize terminal app
+terminal_app = TerminalApp()
+
+@app.route("/terminal")
+def terminal():
+    """Terminal interface page"""
+    return render_template("terminal.html")
+
+@app.route("/api/terminal/init", methods=["POST"])
+def init_terminal():
+    """Initialize terminal session"""
+    try:
+        # In a real app, you might want to create a new instance per session
+        return jsonify({
+            "success": True,
+            "app": "Terminal initialized"
+        })
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500
+
+@app.route("/api/terminal/execute", methods=["POST"])
+def execute_terminal_command():
+    """Execute a terminal command"""
+    try:
+        data = request.json
+        command = data.get("command", "")
+        
+        if not command:
+            return jsonify({
+                "success": False,
+                "error": "No command provided"
+            }), 400
+            
+        # Execute command using terminal app
+        response = terminal_app.execute_command(command)
+        
+        return jsonify({
+            "success": True,
+            "response": response
+        })
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500
 
 if __name__ == "__main__":
     app.run(debug=True, port=5001)
