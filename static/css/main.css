@@ -1606,10 +1606,10 @@ body {
 .sidebar-now-playing {
     flex-shrink: 0;
     margin-bottom: 16px;
-    padding: 20px 18px 18px 18px;
+    padding: 13px 10px 10px 10px;
     background: linear-gradient(135deg, rgba(40,30,50,0.72) 60%, rgba(60,40,80,0.82) 100%);
     border-radius: 22px;
-    font-size: 1em;
+    font-size: 0.85em;
     border: 1.5px solid var(--glass-border);
     box-shadow: 0 8px 32px 0 rgba(0,0,0,0.18), 0 2px 8px 0 rgba(220,118,118,0.08);
     backdrop-filter: blur(18px) saturate(180%);
@@ -1627,28 +1627,38 @@ body {
     box-shadow: 0 0 32px 0 rgba(220,118,118,0.25), 0 8px 32px 0 rgba(0,0,0,0.28);
 }
 .sidebar-now-playing-info img {
-    width: 64px;
-    height: 64px;
+    width: 54px;
+    height: 54px;
     border-radius: 16px;
-    box-shadow: 0 2px 12px 0 rgba(220,118,118,0.10), 0 1.5px 4px 0 rgba(0,0,0,0.10);
-    border: 2.5px solid rgba(255,255,255,0.12);
-    background: linear-gradient(135deg, #2c2c3e 60%, #3c2a4d 100%);
-    transition: box-shadow 0.2s, border 0.2s;
+    box-shadow: 0 4px 18px 0 rgba(60,40,80,0.18), 0 2px 8px 0 rgba(220,118,118,0.10);
+    border: 2.5px solid rgba(255,255,255,0.10);
+    background: linear-gradient(135deg, rgba(44,44,62,0.18) 60%, rgba(60,42,77,0.22) 100%);
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+    /* Glass effect */
+    backdrop-filter: blur(2.5px) saturate(120%);
+    -webkit-backdrop-filter: blur(2.5px) saturate(120%);
 }
-.sidebar-now-playing-info img:hover {
-    box-shadow: 0 4px 18px 0 rgba(220,118,118,0.18);
-    border: 2.5px solid var(--secondary-color);
+.sidebar-now-playing-info img::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 16px;
+    background: linear-gradient(135deg, rgba(40,30,50,0.10) 60%, rgba(220,118,118,0.08) 100%);
+    pointer-events: none;
+    z-index: 2;
 }
 .sidebar-controls {
     background: rgba(255,255,255,0.08);
     border-radius: 12px;
-    padding: 10px 0 6px 0;
+    padding: 5px 0 2px 0;
     box-shadow: 0 2px 12px 0 rgba(60,40,80,0.08);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     display: flex;
     justify-content: center;
-    gap: 8px;
+    gap: 5px;
     margin-bottom: 12px;
     opacity: 0.82;
 }
@@ -1724,6 +1734,13 @@ body {
     opacity: 0.8;
     margin-top: 2px;
     letter-spacing: 0.01em;
+}
+.sidebar-now-playing .song-info h3,
+.sidebar-now-playing .song-info p {
+    color: #ededed;
+    font-weight: 300;
+    font-size: 0.88em;
+    opacity: 0.75;
 }
 
 /* Isolated single-column news layout */
