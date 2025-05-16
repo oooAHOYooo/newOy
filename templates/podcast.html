@@ -15,145 +15,214 @@
         </div>
     </div>
 
-    <div class="podcasts-grid">
-        {% for podcast in podcasts %}
-        <div class="podcast-card">
-            <div class="podcast-image">
-                <img src="{{ podcast.cover_art }}" alt="{{ podcast.title }}">
+    <!-- Table View (like music.html) -->
+    <div class="songs-table">
+        <table>
+            <thead>
+                <tr>
+                    <th class="play-col"></th>
+                    <th class="title-col">Title</th>
+                    <th class="artist-col">Host</th>
+                    <th class="album-col">Date</th>
+                    <th class="duration-col">Duration</th>
+                    <th class="like-col"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for podcast in podcasts %}
+                <tr class="song-row" data-podcast-id="{{ podcast.id }}"
+                    data-title="{{ podcast.title }}"
+                    data-host="{{ podcast.host }}"
+                    data-date="{{ podcast.date }}"
+                    data-duration="{{ podcast.duration|default('30:00') }}">
+                    <td class="play-col">
+                        <button class="play-btn" data-podcast-url="{{ podcast.mp3url }}"
+                                data-podcast-title="{{ podcast.title }}"
+                                data-host="{{ podcast.host }}"
+                                data-podcast-art="{{ podcast.cover_art }}">
+                            <i class="fas fa-play"></i>
+                        </button>
+                    </td>
+                    <td class="title-col">
+                        <div class="song-title">
+                            <img src="{{ podcast.cover_art }}" alt="{{ podcast.title }}" class="song-thumbnail">
+                            <div class="title-info">
+                                <span class="title" data-tooltip="{{ podcast.title }}">{{ podcast.title }}</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="artist-col">
+                        <span class="artist-link" data-tooltip="{{ podcast.host }}">{{ podcast.host }}</span>
+                    </td>
+                    <td class="album-col">{{ podcast.date }}</td>
+                    <td class="duration-col">{{ podcast.duration|default('30:00') }}</td>
+                    <td class="like-col">
+                        <button class="like-btn" data-podcast-id="{{ podcast.id }}" data-tooltip="Bookmark Podcast">
+                            <i class="fas fa-bookmark"></i>
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- No Results Message -->
+    <div class="no-results" style="display: none;">
+        <i class="fas fa-search"></i>
+        <h3>No podcasts found</h3>
+        <p>Try adjusting your search or filters</p>
+    </div>
+</div>
+
+<!-- Podcast Player Bar (like music player) -->
+<div class="music-player" id="podcast-player" style="bottom:0; left:0; right:0;">
+    <div id="now-playing-widget" class="podcast-now-playing-widget">
+        <div class="album-art"><img id="podcast-album-art" src="" alt="Podcast Art"></div>
+        <div class="song-info">
+            <h3 id="podcast-title">No podcast playing</h3>
+            <p id="podcast-host">---</p>
+        </div>
+        <div class="controls">
+            <button id="podcast-prev-btn" title="Previous"><i class="fas fa-step-backward"></i></button>
+            <button id="podcast-play-pause-btn" title="Play/Pause"><i class="fas fa-play"></i></button>
+            <button id="podcast-next-btn" title="Next"><i class="fas fa-step-forward"></i></button>
+        </div>
+        <div class="progress-container" style="position:relative; flex:1;">
+            <div class="progress-bar" id="podcast-progress-bar">
+                <div class="progress" id="podcast-progress"></div>
             </div>
-            <div class="podcast-info">
-                <h3>{{ podcast.title }}</h3>
-                <p>{{ podcast.description }}</p>
-                <div class="podcast-meta">
-                    <span><i class="fas fa-user"></i> {{ podcast.host }}</span>
-                    <span><i class="fas fa-calendar"></i> {{ podcast.date
-                        }}</span>
-                </div>
-            </div>
-            <div class="podcast-actions">
-                <button class="play-btn" data-podcast-url="{{ podcast.url }}">
-                    <i class="fas fa-play"></i>
-                </button>
-                <button class="bookmark-btn" data-podcast-id="{{ podcast.id }}">
-                    <i class="fas fa-bookmark"></i>
-                </button>
+            <div class="time-info">
+                <span id="podcast-current-time">0:00</span>
+                <span id="podcast-total-time">0:00</span>
             </div>
         </div>
-        {% else %}
-        <div class="no-podcasts">
-            <p>No podcasts available at the moment.</p>
-        </div>
-        {% endfor %}
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Search functionality
-    const searchInput = document.getElementById('search-input');
-    const podcastCards = document.querySelectorAll('.podcast-card');
-    
-    searchInput.addEventListener('input', function() {
-        const searchTerm = this.value.toLowerCase();
-        podcastCards.forEach(card => {
-            const title = card.querySelector('h3').textContent.toLowerCase();
-            const description = card.querySelector('p').textContent.toLowerCase();
-            if (title.includes(searchTerm) || description.includes(searchTerm)) {
-                card.style.display = 'block';
-            } else {
-                card.style.display = 'none';
-            }
-        });
+// Podcast playlist logic (table style, like music)
+const podcastRows = document.querySelectorAll('.song-row');
+const podcastPlaylist = Array.from(podcastRows).map(row => ({
+    url: row.querySelector('.play-btn').getAttribute('data-podcast-url'),
+    title: row.getAttribute('data-title'),
+    host: row.getAttribute('data-host'),
+    art: row.querySelector('.play-btn').getAttribute('data-podcast-art')
+}));
+let podcastIndex = -1;
+let podcastAudio = new Audio();
+let podcastIsPlaying = false;
+
+function loadPodcast(idx) {
+    if (idx < 0 || idx >= podcastPlaylist.length) return;
+    podcastIndex = idx;
+    const podcast = podcastPlaylist[idx];
+    podcastAudio.src = podcast.url;
+    document.getElementById('podcast-album-art').src = podcast.art;
+    document.getElementById('podcast-title').textContent = podcast.title;
+    document.getElementById('podcast-host').textContent = podcast.host;
+    document.getElementById('podcast-play-pause-btn').querySelector('i').className = 'fas fa-play';
+    document.getElementById('podcast-current-time').textContent = '0:00';
+    document.getElementById('podcast-total-time').textContent = '0:00';
+    document.getElementById('podcast-progress').style.width = '0%';
+}
+
+function playPodcast() {
+    if (podcastIndex === -1) return;
+    podcastAudio.play();
+    podcastIsPlaying = true;
+    document.getElementById('podcast-play-pause-btn').querySelector('i').className = 'fas fa-pause';
+}
+
+function pausePodcast() {
+    podcastAudio.pause();
+    podcastIsPlaying = false;
+    document.getElementById('podcast-play-pause-btn').querySelector('i').className = 'fas fa-play';
+}
+
+function togglePodcastPlayPause() {
+    if (podcastIsPlaying) {
+        pausePodcast();
+    } else {
+        playPodcast();
+    }
+}
+
+function playNextPodcast() {
+    if (podcastIndex < podcastPlaylist.length - 1) {
+        loadPodcast(podcastIndex + 1);
+        playPodcast();
+    }
+}
+function playPrevPodcast() {
+    if (podcastIndex > 0) {
+        loadPodcast(podcastIndex - 1);
+        playPodcast();
+    }
+}
+
+// Progress bar update
+podcastAudio.addEventListener('timeupdate', function() {
+    const progress = (podcastAudio.currentTime / podcastAudio.duration) * 100;
+    document.getElementById('podcast-progress').style.width = progress + '%';
+    document.getElementById('podcast-current-time').textContent = formatTime(podcastAudio.currentTime);
+    document.getElementById('podcast-total-time').textContent = formatTime(podcastAudio.duration);
+});
+
+function formatTime(seconds) {
+    if (isNaN(seconds)) return '0:00';
+    const m = Math.floor(seconds / 60);
+    const s = Math.floor(seconds % 60);
+    return m + ':' + (s < 10 ? '0' : '') + s;
+}
+
+document.querySelectorAll('.play-btn').forEach((btn, idx) => {
+    btn.addEventListener('click', function() {
+        loadPodcast(idx);
+        playPodcast();
     });
+});
+document.getElementById('podcast-play-pause-btn').addEventListener('click', togglePodcastPlayPause);
+document.getElementById('podcast-next-btn').addEventListener('click', playNextPodcast);
+document.getElementById('podcast-prev-btn').addEventListener('click', playPrevPodcast);
+document.getElementById('podcast-progress-bar').addEventListener('click', function(e) {
+    const rect = this.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const pct = x / rect.width;
+    podcastAudio.currentTime = pct * podcastAudio.duration;
+});
 
-    // Filter functionality
-    const filterButtons = document.querySelectorAll('.filter-btn');
-    filterButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            filterButtons.forEach(btn => btn.classList.remove('active'));
-            this.classList.add('active');
-            // Implement filter logic here
-        });
-    });
+// Optional: auto play next podcast when finished
+podcastAudio.addEventListener('ended', playNextPodcast);
 
-    // Play button functionality
-    const playButtons = document.querySelectorAll('.play-btn');
-    playButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const podcastUrl = this.dataset.podcastUrl;
-            const podcastCard = this.closest('.podcast-card');
-            const podcastTitle = podcastCard.querySelector('h3').textContent;
-            const podcastHost = podcastCard.querySelector('.podcast-meta span:first-child').textContent.replace('👤 ', '');
-            const podcastImage = podcastCard.querySelector('.podcast-image img').src;
+document.querySelectorAll('.play-btn').forEach((btn) => {
+    btn.addEventListener('click', function() {
+        const podcastUrl = btn.getAttribute('data-podcast-url');
+        const podcastTitle = btn.getAttribute('data-podcast-title');
+        const podcastHost = btn.getAttribute('data-host');
+        const podcastArt = btn.getAttribute('data-podcast-art');
 
-            // Update now playing widget
-            const sidebarTitle = document.getElementById('sidebar-song-title');
-            const sidebarArtist = document.getElementById('sidebar-artist');
-            const sidebarArt = document.getElementById('sidebar-album-art');
-            
-            if (sidebarTitle) sidebarTitle.textContent = podcastTitle;
-            if (sidebarArtist) sidebarArtist.textContent = podcastHost;
-            if (sidebarArt) sidebarArt.src = podcastImage;
+        // Use the global audio player (like music)
+        if (window.audioPlayer) {
+            window.audioPlayer.src = podcastUrl;
+            window.audioPlayer.play();
+        }
 
-            // Sync with server
-            fetch('/api/now-playing', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    type: 'podcast',
-                    title: podcastTitle,
-                    artist: podcastHost,
-                    albumArt: podcastImage,
-                    url: podcastUrl
-                })
-            }).catch(error => console.error('Error updating now playing:', error));
-        });
-    });
-
-    // Bookmark functionality
-    const bookmarkButtons = document.querySelectorAll('.bookmark-btn');
-    bookmarkButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const podcastId = this.dataset.podcastId;
-            fetch('/bookmark', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: `item_id=${podcastId}&item_type=podcast`
+        // Update Now Playing widget via API
+        fetch('/api/now-playing', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                type: 'podcast',
+                title: podcastTitle,
+                artist: podcastHost,
+                albumArt: podcastArt,
+                url: podcastUrl
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    this.classList.toggle('active');
-                }
-            })
-            .catch(error => console.error('Error:', error));
         });
     });
-
-    // Initialize now playing from server
-    fetch('/api/now-playing')
-        .then(response => response.json())
-        .then(data => {
-            if (data.now_playing && data.now_playing.type === 'podcast') {
-                const podcastCard = document.querySelector(`[data-podcast-url="${data.now_playing.url}"]`);
-                if (podcastCard) {
-                    const sidebarTitle = document.getElementById('sidebar-song-title');
-                    const sidebarArtist = document.getElementById('sidebar-artist');
-                    const sidebarArt = document.getElementById('sidebar-album-art');
-                    
-                    if (sidebarTitle) sidebarTitle.textContent = data.now_playing.title;
-                    if (sidebarArtist) sidebarArtist.textContent = data.now_playing.artist;
-                    if (sidebarArt) sidebarArt.src = data.now_playing.albumArt;
-                }
-            }
-        })
-        .catch(error => console.error('Error loading now playing:', error));
 });
 </script>
 {% endblock %}

@@ -84,11 +84,11 @@ body {
     position: fixed;
     left: 0;
     top: 0;
-    width: var(--sidebar-width);
+    width: 220px;
     height: 100vh;
     color: white;
     padding: 20px;
-    transition: all var(--transition-speed) ease;
+    transition: width var(--transition-speed) ease;
     z-index: 1000;
     @extend .glass-effect;
     display: flex;
@@ -96,29 +96,30 @@ body {
     max-height: 100vh;
     overflow: hidden;
     padding-bottom: 0;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.18) rgba(40,30,50,0.12);
 }
 
 .left-dashboard.collapsed {
-    width: 60px;
-    padding: 20px 10px;
+    width: 48px;
+    padding: 20px 4px;
 }
 
+.left-dashboard .nav-text {
+    display: inline;
+    transition: opacity 0.2s, width 0.2s;
+    white-space: nowrap;
+}
+.left-dashboard.collapsed .nav-text {
+    display: none;
+}
+
+.left-dashboard .logo-text {
+    display: inline-block;
+    transition: opacity 0.2s, width 0.2s;
+}
 .left-dashboard.collapsed .logo-text {
     display: none;
-}
-
-.left-dashboard.collapsed .nav-button {
-    padding: 12px;
-    justify-content: center;
-}
-
-.left-dashboard.collapsed .nav-button span {
-    display: none;
-}
-
-.left-dashboard.collapsed .nav-button i {
-    margin: 0;
-    font-size: 1.4rem;
 }
 
 .logo-container {
@@ -176,7 +177,31 @@ body {
     flex: 1 1 auto;
     min-height: 0;
     overflow-y: auto;
+    overflow-x: hidden;
     padding-bottom: 0;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.18) rgba(40,30,50,0.12);
+}
+
+.left-dashboard::-webkit-scrollbar, .sidebar-menu::-webkit-scrollbar {
+    width: 10px;
+    background: rgba(40,30,50,0.10);
+    border-radius: 8px;
+}
+.left-dashboard::-webkit-scrollbar-thumb, .sidebar-menu::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, rgba(255,255,255,0.18) 60%, rgba(184,124,156,0.18) 100%);
+    border-radius: 8px;
+    border: 2px solid rgba(255,255,255,0.10);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    box-shadow: 0 2px 8px 0 rgba(60,40,80,0.10);
+}
+.left-dashboard::-webkit-scrollbar-thumb:hover, .sidebar-menu::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, rgba(220,118,118,0.22) 60%, rgba(184,124,156,0.22) 100%);
+    border: 2px solid rgba(255,255,255,0.18);
+}
+.left-dashboard::-webkit-scrollbar-corner, .sidebar-menu::-webkit-scrollbar-corner {
+    background: transparent;
 }
 
 .nav-button {
@@ -250,7 +275,7 @@ body {
 
 /* Main content */
 .main-content {
-    margin-left: var(--sidebar-width);
+    margin-left: 220px;
     padding: 40px;
     flex: 1;
     transition: margin-left var(--transition-speed) ease;
@@ -258,7 +283,7 @@ body {
 }
 
 .main-content.sidebar-collapsed {
-    margin-left: 60px;
+    margin-left: 48px;
 }
 
 /* Music player */
@@ -1742,4 +1767,14 @@ body {
     border-radius: 12px;
     margin: 0 0 1rem 0;
     background: #222;
+}
+
+/* Player in sidebar: hide text in collapsed */
+.sidebar-now-playing .sidebar-now-playing-info,
+.sidebar-now-playing .sidebar-music-meta {
+    display: block;
+}
+.left-dashboard.collapsed .sidebar-now-playing .sidebar-now-playing-info,
+.left-dashboard.collapsed .sidebar-now-playing .sidebar-music-meta {
+    display: none;
 }
