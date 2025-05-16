@@ -88,92 +88,8 @@ const podcastPlaylist = Array.from(podcastRows).map(row => ({
     host: row.getAttribute('data-host'),
     art: row.querySelector('.play-btn').getAttribute('data-podcast-art')
 }));
-let podcastIndex = -1;
-let podcastAudio = new Audio();
-let podcastIsPlaying = false;
 
-function loadPodcast(idx) {
-    if (idx < 0 || idx >= podcastPlaylist.length) return;
-    podcastIndex = idx;
-    const podcast = podcastPlaylist[idx];
-    podcastAudio.src = podcast.url;
-    document.getElementById('podcast-album-art').src = podcast.art;
-    document.getElementById('podcast-title').textContent = podcast.title;
-    document.getElementById('podcast-host').textContent = podcast.host;
-    document.getElementById('podcast-play-pause-btn').querySelector('i').className = 'fas fa-play';
-    document.getElementById('podcast-current-time').textContent = '0:00';
-    document.getElementById('podcast-total-time').textContent = '0:00';
-    document.getElementById('podcast-progress').style.width = '0%';
-}
-
-function playPodcast() {
-    if (podcastIndex === -1) return;
-    podcastAudio.play();
-    podcastIsPlaying = true;
-    document.getElementById('podcast-play-pause-btn').querySelector('i').className = 'fas fa-pause';
-}
-
-function pausePodcast() {
-    podcastAudio.pause();
-    podcastIsPlaying = false;
-    document.getElementById('podcast-play-pause-btn').querySelector('i').className = 'fas fa-play';
-}
-
-function togglePodcastPlayPause() {
-    if (podcastIsPlaying) {
-        pausePodcast();
-    } else {
-        playPodcast();
-    }
-}
-
-function playNextPodcast() {
-    if (podcastIndex < podcastPlaylist.length - 1) {
-        loadPodcast(podcastIndex + 1);
-        playPodcast();
-    }
-}
-function playPrevPodcast() {
-    if (podcastIndex > 0) {
-        loadPodcast(podcastIndex - 1);
-        playPodcast();
-    }
-}
-
-// Progress bar update
-podcastAudio.addEventListener('timeupdate', function() {
-    const progress = (podcastAudio.currentTime / podcastAudio.duration) * 100;
-    document.getElementById('podcast-progress').style.width = progress + '%';
-    document.getElementById('podcast-current-time').textContent = formatTime(podcastAudio.currentTime);
-    document.getElementById('podcast-total-time').textContent = formatTime(podcastAudio.duration);
-});
-
-function formatTime(seconds) {
-    if (isNaN(seconds)) return '0:00';
-    const m = Math.floor(seconds / 60);
-    const s = Math.floor(seconds % 60);
-    return m + ':' + (s < 10 ? '0' : '') + s;
-}
-
-document.querySelectorAll('.play-btn').forEach((btn, idx) => {
-    btn.addEventListener('click', function() {
-        loadPodcast(idx);
-        playPodcast();
-    });
-});
-document.getElementById('podcast-play-pause-btn').addEventListener('click', togglePodcastPlayPause);
-document.getElementById('podcast-next-btn').addEventListener('click', playNextPodcast);
-document.getElementById('podcast-prev-btn').addEventListener('click', playPrevPodcast);
-document.getElementById('podcast-progress-bar').addEventListener('click', function(e) {
-    const rect = this.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const pct = x / rect.width;
-    podcastAudio.currentTime = pct * podcastAudio.duration;
-});
-
-// Optional: auto play next podcast when finished
-podcastAudio.addEventListener('ended', playNextPodcast);
-
+// Remove all the old podcast audio player code and keep only the global player integration
 document.querySelectorAll('.play-btn').forEach((btn) => {
     btn.addEventListener('click', function() {
         const podcastUrl = btn.getAttribute('data-podcast-url');
@@ -181,24 +97,34 @@ document.querySelectorAll('.play-btn').forEach((btn) => {
         const podcastHost = btn.getAttribute('data-host');
         const podcastArt = btn.getAttribute('data-podcast-art');
 
-        // Use the global audio player (like music)
+        // Use the global audio player
         if (window.audioPlayer) {
             window.audioPlayer.src = podcastUrl;
-            window.audioPlayer.play();
+            window.audioPlayer.play()
+                .then(() => {
+                    // Update play buttons
+                    document.querySelectorAll('.play-btn').forEach(b => {
+                        b.innerHTML = '<i class="fas fa-play"></i>';
+                    });
+                    this.innerHTML = '<i class="fas fa-pause"></i>';
+                    
+                    // Update Now Playing widget via API
+                    fetch('/api/now-playing', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            type: 'podcast',
+                            title: podcastTitle,
+                            artist: podcastHost,
+                            albumArt: podcastArt,
+                            url: podcastUrl
+                        })
+                    });
+                })
+                .catch(error => {
+                    console.error('Error playing podcast:', error);
+                });
         }
-
-        // Update Now Playing widget via API
-        fetch('/api/now-playing', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                type: 'podcast',
-                title: podcastTitle,
-                artist: podcastHost,
-                albumArt: podcastArt,
-                url: podcastUrl
-            })
-        });
     });
 });
 </script>
