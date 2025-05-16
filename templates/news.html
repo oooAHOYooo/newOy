@@ -1,8 +1,9 @@
 {% extends "base.html" %}
 
 {% block content %}
+<div class="custom-news-section">
 <div class="latest-news news-center">
-    <h1>What's New?</h1>
+    <h1>What's The Jazz?</h1>
     <div id="single-news-container">
         {% set item = news_items[0] if news_items else None %}
         {% if item %}
@@ -14,7 +15,6 @@
                 <div class="news-title">{{ item.title }}</div>
                 <div class="news-meta">
                     <span class="news-date">{{ item.date }}</span>
-                    <span class="news-category">{{ item.category }}</span>
                 </div>
                 <div class="news-content-preview" id="news-content-preview">
                     {{ item.content[:220] }}{% if item.content|length > 220 %}...{% endif %}
@@ -37,6 +37,7 @@
         <button id="next-news-btn" onclick="showNextNews()">Next</button>
     </div>
 </div>
+</div>
 <script>
 const newsItems = {{ news_items|tojson }};
 let currentNewsIdx = 0;
@@ -56,7 +57,6 @@ function renderNews(idx) {
                 <div class='news-title'>${item.title}</div>
                 <div class='news-meta'>
                     <span class='news-date'>${item.date}</span>
-                    <span class='news-category'>${item.category}</span>
                 </div>
                 <div class='news-content-preview' id='news-content-preview'>${contentPreview}</div>
                 ${readMoreBtn}
