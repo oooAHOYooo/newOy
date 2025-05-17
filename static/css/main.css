@@ -178,9 +178,12 @@ body {
     min-height: 0;
     overflow-y: auto;
     overflow-x: hidden;
-    padding-bottom: 0;
+    padding: 12px 8px;
     scrollbar-width: thin;
     scrollbar-color: rgba(255,255,255,0.18) rgba(40,30,50,0.12);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
 .left-dashboard::-webkit-scrollbar, .sidebar-menu::-webkit-scrollbar {
@@ -207,48 +210,51 @@ body {
 .nav-button {
     display: flex;
     align-items: center;
-    padding: 12px 20px;
+    padding: 8px 14px;
     color: white;
     text-decoration: none;
-    border-radius: 8px;
-    transition: all 0.3s ease;
+    border-radius: 10px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     border: 1px solid transparent;
     position: relative;
+    gap: 10px;
+    background: transparent;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
 }
 
 .nav-button:hover {
-    background: rgba(184, 124, 156, 0.2);
+    background: rgba(184, 124, 156, 0.05);
     border-color: var(--accent-color);
-    transform: translateX(5px);
+    transform: translateX(4px) scale(1.01);
+    box-shadow: 0 4px 12px rgba(184, 124, 156, 0.08);
 }
 
 .nav-button.active {
-    background: rgba(220, 118, 118, 0.2);
+    background: rgba(220, 118, 118, 0.05);
     border-color: var(--secondary-color);
     color: var(--secondary-color);
-}
-
-.nav-button.active i {
-    color: var(--secondary-color);
-}
-
-.nav-button.active::before {
-    content: '';
-    position: absolute;
-    left: -20px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 4px;
-    height: 20px;
-    background: var(--secondary-color);
-    border-radius: 0 2px 2px 0;
-    box-shadow: 0 0 10px var(--secondary-color);
+    box-shadow: 0 4px 12px rgba(220, 118, 118, 0.08);
 }
 
 .nav-button i {
-    margin-right: 10px;
-    font-size: 1.2rem;
+    margin-right: 0;
+    font-size: 1.1rem;
     color: var(--secondary-color);
+    transition: all 0.3s ease;
+    opacity: 0.8;
+}
+
+/* Touch-friendly styles */
+@media (hover: none) {
+    .nav-button {
+        padding: 10px 14px;
+    }
+    
+    .nav-button:active {
+        transform: scale(0.98);
+        background: rgba(184, 124, 156, 0.08);
+    }
 }
 
 /* Toggle button */
@@ -618,36 +624,6 @@ body {
 .music-player.active .time-info {
     color: rgba(255, 255, 255, 0.7);
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-}
-
-/* Touch-friendly styles */
-@media (hover: none) {
-    .nav-button {
-        padding: 15px 20px; /* Larger touch targets */
-    }
-
-    .toggle-sidebar-btn {
-        padding: 15px; /* Larger touch target */
-    }
-}
-
-@media (max-width: 480px) {
-    .main-content {
-        padding: 20px;
-    }
-
-    #now-playing-widget {
-        grid-template-columns: 1fr;
-        text-align: center;
-    }
-
-    .album-art {
-        margin: 0 auto;
-    }
-
-    .controls {
-        justify-content: center;
-    }
 }
 
 /* Animations */
